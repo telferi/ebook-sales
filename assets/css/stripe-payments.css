@@ -1,0 +1,15 @@
+/* Előfizetés gomb stílusai */
+.stripe-sub-pay-btn {
+    padding: 12px 24px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+.stripe-sub-pay-btn:hover {
+    background: #45a049;
+}
