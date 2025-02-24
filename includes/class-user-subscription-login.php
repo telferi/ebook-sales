@@ -62,16 +62,20 @@ class User_Subscription_Login {
     
     // Ha a wp-login.php-ra jön a kérés, átirányítjuk a saját login oldalra
     public function disable_wp_login() {
-        // DOING_AJAX esetén nem irányítjuk át
+        // DOING_AJAX esetén ne irányítjuk át
         if (defined('DOING_AJAX') && DOING_AJAX) {
             return;
         }
         
-        // Ha a kérés nem a saját login slug-ot tartalmazza, átirányítjuk
         $login_slug = get_option('user_subscription_login_page', 'login');
-        $current_url = $_SERVER['REQUEST_URI'];
-        if (strpos($current_url, '/' . $login_slug) === false) {
-            wp_redirect(home_url('/' . $login_slug));
+        $login_url  = trailingslashit(home_url('/' . $login_slug));
+        
+        // Az aktuális URL-t teljes URL-ként kapjuk meg
+        $current_url  = trailingslashit(home_url(add_query_arg(array(), $_SERVER['REQUEST_URI'])));
+        
+        // Ha az aktuális URL nem egyezik a login URL-lel, átirányítunk
+        if ($current_url !== $login_url) {
+            wp_redirect($login_url);
             exit;
         }
     }
