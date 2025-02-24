@@ -107,10 +107,14 @@ class User_Subscription_Login {
         if (defined('DOING_AJAX') && DOING_AJAX) {
             return;
         }
-        // Átirányítás a saját login oldalra
+        
+        // Csak akkor irányítsuk át, ha nem már a saját login oldalon vagy annak URL-jén vagyunk
         $login_slug = get_option('user_subscription_login_page', 'login');
-        wp_redirect(home_url('/' . $login_slug));
-        exit;
+        $current_url = $_SERVER['REQUEST_URI'];
+        if (strpos($current_url, '/' . $login_slug) === false) {
+            wp_redirect(home_url('/' . $login_slug));
+            exit;
+        }
     }
     
     // Módosítja a login_url szűrőn keresztül az URL-t a saját login oldalra
