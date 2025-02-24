@@ -12,10 +12,10 @@ class User_Subscription_Login {
         add_filter('query_vars', [$this, 'add_query_vars']);
         add_action('template_redirect', [$this, 'template_redirect']);
         
-        // wp-login.php letiltása és átirányítása
+        // wp-login.php letiltása: átirányítás a saját login oldalra
         add_action('login_init', [$this, 'disable_wp_login']);
 
-        // Módosítjuk a login_url generálódását is
+        // Generált login_url módosítása
         add_filter('login_url', [$this, 'filter_login_url'], 10, 3);
     }
     
@@ -39,76 +39,35 @@ class User_Subscription_Login {
         }
     }
     
-    // A bejelentkező oldal sablonja
+    // Saját login oldal – ugyanaz a funkcionalitás, mint wp-login.php
     public function login_page_template() {
         if (is_user_logged_in()) {
             wp_redirect(home_url());
             exit;
         }
-        
-        $errors = [];
-        // Űrlap feldolgozása
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_login'])) {
-            if (!isset($_POST['user_subscription_login_nonce']) || 
-                !wp_verify_nonce($_POST['user_subscription_login_nonce'], 'user_subscription_login_action')) {
-                $errors[] = __('Hibás űrlap ellenőrzés.', 'ebook-sales');
-            } else {
-                $credentials = [
-                    'user_login'    => sanitize_user($_POST['user_login']),
-                    'user_password' => $_POST['user_pass'],
-                    'remember'      => isset($_POST['remember']) ? true : false,
-                ];
-                $user = wp_signon($credentials, false);
-                if (is_wp_error($user)) {
-                    $errors[] = __('Hibás felhasználónév vagy jelszó.', 'ebook-sales');
-                } else {
-                    wp_redirect(home_url());
-                    exit;
-                }
-            }
-        }
-        
+
+        // A wp_login_form() függvény alapértelmezett űrlapját jelenítjük meg
+        // Amennyiben szükséges, testreszabhatod az argumentumokat
         get_header();
         echo '<div class="user-login">';
         echo '<h1>' . __('Bejelentkezés', 'ebook-sales') . '</h1>';
-        if (!empty($errors)) {
-            foreach ($errors as $error) {
-                echo '<p style="color:red;">' . esc_html($error) . '</p>';
-            }
-        }
-        ?>
-        <form method="post">
-            <?php wp_nonce_field('user_subscription_login_action', 'user_subscription_login_nonce'); ?>
-            <p>
-                <label for="user_login"><?php _e('Felhasználónév:', 'ebook-sales'); ?></label>
-                <input type="text" name="user_login" id="user_login" required>
-            </p>
-            <p>
-                <label for="user_pass"><?php _e('Jelszó:', 'ebook-sales'); ?></label>
-                <input type="password" name="user_pass" id="user_pass" required>
-            </p>
-            <p>
-                <label for="remember">
-                    <input type="checkbox" name="remember" id="remember"> <?php _e('Emlékezz rám', 'ebook-sales'); ?>
-                </label>
-            </p>
-            <p>
-                <input type="submit" value="<?php _e('Bejelentkezés', 'ebook-sales'); ?>">
-            </p>
-        </form>
-        <?php
+        wp_login_form( [
+            'redirect' => home_url(), // Átirányítás bejelentkezés után
+        ]);
+        // Megjeleníthetjük a lost password link-et
+        echo '<p><a href="' . esc_url(wp_lostpassword_url()) . '">' . __('Elfelejtetted a jelszavad?', 'ebook-sales') . '</a></p>';
         echo '</div>';
         get_footer();
     }
     
-    // wp-login.php letiltása: átirányítás a saját login oldalra
+    // Ha a wp-login.php-ra jön a kérés, átirányítjuk a saját login oldalra
     public function disable_wp_login() {
-        // DOING_AJAX esetén ne irányítsuk át
+        // DOING_AJAX esetén nem irányítjuk át
         if (defined('DOING_AJAX') && DOING_AJAX) {
             return;
         }
         
-        // Csak akkor irányítsuk át, ha nem már a saját login oldalon vagy annak URL-jén vagyunk
+        // Ha a kérés nem a saját login slug-ot tartalmazza, átirányítjuk
         $login_slug = get_option('user_subscription_login_page', 'login');
         $current_url = $_SERVER['REQUEST_URI'];
         if (strpos($current_url, '/' . $login_slug) === false) {
@@ -117,10 +76,10 @@ class User_Subscription_Login {
         }
     }
     
-    // Módosítja a login_url szűrőn keresztül az URL-t a saját login oldalra
+    // A beépített login_url módosítása, hogy mindig a saját URL-re mutasson
     public function filter_login_url($login_url, $redirect, $force_reauth) {
         $login_slug = get_option('user_subscription_login_page', 'login');
-        return home_url('/' . $login_slug);
+        return home_url('/' . $login_slug . '/');
     }
 }
 
