@@ -34,6 +34,7 @@ require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-stripe-payment-handler.php
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-stripe-webhook-handler.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-payment-admin.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-stripe-subscription-handler.php'; // Új
+require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-user-admin-setup.php';
 
 // Aktiválás/deaktiválás
 register_activation_hook(__FILE__, function() {
