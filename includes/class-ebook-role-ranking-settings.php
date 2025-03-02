@@ -104,6 +104,24 @@ class Ebook_Role_Ranking_Settings {
                 </table>
                 <?php submit_button( __( 'Mentés', 'ebook-sales' ) ); ?>
             </form>
+            <?php
+            $options = get_option( 'ebook_role_ranking_settings' );
+            $count = isset( $options['role_ranking_count'] ) ? intval( $options['role_ranking_count'] ) : 5;
+
+            // Lekérjük a szerkeszthető szerepköröket a megjelenítéshez
+            $editable_roles = get_editable_roles();
+
+            echo '<h2>' . __( 'Aktuális szerepkör rang sorrendje', 'ebook-sales' ) . '</h2>';
+            echo '<div class="role-ranking-summary" style="margin-top:10px; margin-bottom:20px;">';
+            for ( $i = 1; $i <= $count; $i++ ) {
+                if ( ! empty( $options[ "role_rank_$i" ] ) ) {
+                    $role_key = $options[ "role_rank_$i" ];
+                    $role_name = isset( $editable_roles[ $role_key ]['name'] ) ? $editable_roles[ $role_key ]['name'] : $role_key;
+                    echo '<span style="margin-right:15px;">' . sprintf( __( '%d: %s', 'ebook-sales' ), $i, esc_html( $role_name ) ) . '</span>';
+                }
+            }
+            echo '</div>';
+            ?>
         </div>
         <?php
     }

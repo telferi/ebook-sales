@@ -161,6 +161,23 @@ class Ebook_Dependency_Settings {
                         <?php _e('Add New', 'ebook-sales'); ?>
                     </a>
                 </p>
+                <?php
+                $role_ranking = get_option( 'ebook_role_ranking_settings' );
+                if ( $role_ranking && isset( $role_ranking['role_ranking_count'] ) ) {
+                    $count = intval( $role_ranking['role_ranking_count'] );
+                    $editable_roles = get_editable_roles();
+                    echo '<div class="role-ranking-summary" style="margin-bottom:15px;">';
+                    echo '<strong>' . __( 'Szerepkör rang sorrend:', 'ebook-sales' ) . '</strong> ';
+                    for ( $i = 1; $i <= $count; $i++ ) {
+                        if ( ! empty( $role_ranking[ "role_rank_$i" ] ) ) {
+                            $role_key = $role_ranking[ "role_rank_$i" ];
+                            $role_name = isset( $editable_roles[ $role_key ]['name'] ) ? $editable_roles[ $role_key ]['name'] : $role_key;
+                            echo sprintf( __( '%d: %s', 'ebook-sales' ), $i, esc_html( $role_name ) ) . ' ';
+                        }
+                    }
+                    echo '</div>';
+                }
+                ?>
                 <table class="wp-list-table widefat fixed striped">
                     <thead>
                         <tr>
