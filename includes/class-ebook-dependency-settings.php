@@ -111,6 +111,67 @@ class Ebook_Dependency_Settings {
                                 <input type="text" name="changed_result" id="changed_result" class="regular-text" required>
                             </td>
                         </tr>
+                        <?php
+                        // Készítjük a szerepkör opciókat
+                        $editable_roles = get_editable_roles();
+                        $role_options = '<option value="">' . esc_html__('Válassz egy szerepkört', 'ebook-sales') . '</option>';
+                        foreach ( $editable_roles as $role_key => $role_info ) {
+                            if ( 'administrator' === $role_key ) {
+                                continue;
+                            }
+                            $role_options .= '<option value="' . esc_attr($role_key) . '">' . esc_html($role_info['name']) . '</option>';
+                        }
+                        ?>
+                        <tr>
+                            <th scope="row">
+                                <label for="role_rank_1"><?php _e('Szerepkör rang 1 (legkisebb)', 'ebook-sales'); ?></label>
+                            </th>
+                            <td>
+                                <select name="role_rank_1" id="role_rank_1">
+                                    <?php echo $role_options; ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="role_rank_2"><?php _e('Szerepkör rang 2', 'ebook-sales'); ?></label>
+                            </th>
+                            <td>
+                                <select name="role_rank_2" id="role_rank_2">
+                                    <?php echo $role_options; ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="role_rank_3"><?php _e('Szerepkör rang 3', 'ebook-sales'); ?></label>
+                            </th>
+                            <td>
+                                <select name="role_rank_3" id="role_rank_3">
+                                    <?php echo $role_options; ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="role_rank_4"><?php _e('Szerepkör rang 4', 'ebook-sales'); ?></label>
+                            </th>
+                            <td>
+                                <select name="role_rank_4" id="role_rank_4">
+                                    <?php echo $role_options; ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="role_rank_5"><?php _e('Szerepkör rang 5 (legnagyobb)', 'ebook-sales'); ?></label>
+                            </th>
+                            <td>
+                                <select name="role_rank_5" id="role_rank_5">
+                                    <?php echo $role_options; ?>
+                                </select>
+                            </td>
+                        </tr>
                     </table>
                     <?php submit_button(__('Mentés', 'ebook-sales')); ?>
                 </form>
