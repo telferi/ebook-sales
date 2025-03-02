@@ -153,6 +153,120 @@ class Ebook_Dependency_Settings {
                     })(jQuery);
                 </script>
                 <?php
+            } 
+            // A szerkesztő űrlap megjelenítése, ha GET paraméter: action=edit és id van
+            elseif ( isset( $_GET['action'] ) && $_GET['action'] == 'edit' && isset( $_GET['id'] ) ) {
+                $edit_id = intval( $_GET['id'] );
+                $conditions = get_option( 'ebook_dependency_conditions', array() );
+                $edit_condition = false;
+                foreach ( $conditions as $cond ) {
+                    if ( intval( $cond['id'] ) === $edit_id ) {
+                        $edit_condition = $cond;
+                        break;
+                    }
+                }
+                if ( ! $edit_condition ) {
+                    echo '<div class="error"><p>' . __( 'Függőség nem található!', 'ebook-sales' ) . '</p></div>';
+                } else {
+                    ?>
+                    <h2><?php _e( 'Függőség szerkesztése', 'ebook-sales' ); ?></h2>
+                    <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>">
+                        <?php wp_nonce_field( 'edit_dependency_condition', 'dependency_condition_nonce' ); ?>
+                        <input type="hidden" name="action" value="edit_dependency_condition">
+                        <input type="hidden" name="id" value="<?php echo esc_attr( $edit_condition['id'] ); ?>">
+                        <table class="form-table">
+                            <!-- Felhasználó típusa -->
+                            <tr>
+                                <th scope="row">
+                                    <label for="user_type"><?php _e( 'Felhasználó típusa', 'ebook-sales' ); ?></label>
+                                </th>
+                                <td>
+                                    <select name="user_type" id="user_type">
+                                        <option value="registered" <?php selected( $edit_condition['user_type'], 'registered' ); ?>><?php _e( 'Regisztrált Látogató', 'ebook-sales' ); ?></option>
+                                        <option value="guest" <?php selected( $edit_condition['user_type'], 'guest' ); ?>><?php _e( 'Vendég', 'ebook-sales' ); ?></option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <!-- Vizsgált feltétel -->
+                            <tr>
+                                <th scope="row">
+                                    <label for="test_condition"><?php _e( 'Vizsgált feltétel', 'ebook-sales' ); ?></label>
+                                </th>
+                                <td>
+                                    <select name="test_condition" id="test_condition" required>
+                                        <option value="social_share" <?php selected( $edit_condition['test_condition'], 'social_share' ); ?>><?php _e( 'Közösségi megosztás', 'ebook-sales' ); ?></option>
+                                        <option value="support_donation" <?php selected( $edit_condition['test_condition'], 'support_donation' ); ?>><?php _e( 'Támogatás', 'ebook-sales' ); ?></option>
+                                        <option value="ebook_purchase" <?php selected( $edit_condition['test_condition'], 'ebook_purchase' ); ?>><?php _e( 'Ebook vásárlás', 'ebook-sales' ); ?></option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <!-- Extra mezők támogatás vagy ebook vásárlás esetén -->
+                            <tr id="comparison_fields" style="display:none;">
+                                <th scope="row">
+                                    <label for="comparison_operator"><?php _e( 'Összehasonlító operátor', 'ebook-sales' ); ?></label>
+                                </th>
+                                <td>
+                                    <select name="comparison_operator" id="comparison_operator">
+                                        <option value="less" <?php selected( $edit_condition['comparison_operator'], 'less' ); ?>><?php _e( 'Kisebb', 'ebook-sales' ); ?></option>
+                                        <option value="greater" <?php selected( $edit_condition['comparison_operator'], 'greater' ); ?>><?php _e( 'Nagyobb', 'ebook-sales' ); ?></option>
+                                        <option value="equal" <?php selected( $edit_condition['comparison_operator'], 'equal' ); ?>><?php _e( 'Egyenlő', 'ebook-sales' ); ?></option>
+                                        <option value="ge" <?php selected( $edit_condition['comparison_operator'], 'ge' ); ?>><?php _e( 'Nagyobb vagy egyenlő', 'ebook-sales' ); ?></option>
+                                        <option value="le" <?php selected( $edit_condition['comparison_operator'], 'le' ); ?>><?php _e( 'Kisebb vagy egyenlő', 'ebook-sales' ); ?></option>
+                                        <option value="neq" <?php selected( $edit_condition['comparison_operator'], 'neq' ); ?>><?php _e( 'Nem egyenlő', 'ebook-sales' ); ?></option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr id="amount_field" style="display:none;">
+                                <th scope="row">
+                                    <label for="comparison_amount"><?php _e( 'Összeg (USD)', 'ebook-sales' ); ?></label>
+                                </th>
+                                <td>
+                                    <input type="number" name="comparison_amount" id="comparison_amount" class="regular-text" min="1" step="0.01" value="<?php echo esc_attr( $edit_condition['comparison_amount'] ); ?>">
+                                </td>
+                            </tr>
+                            <?php
+                            // Szerepkör opciók elkészítése
+                            $editable_roles = get_editable_roles();
+                            $role_options = '<option value="">' . esc_html__( 'Válassz egy szerepkört', 'ebook-sales' ) . '</option>';
+                            foreach ( $editable_roles as $role_key => $role_info ) {
+                                if ( 'administrator' === $role_key ) {
+                                    continue;
+                                }
+                                $role_options .= '<option value="' . esc_attr( $role_key ) . '" ' . selected( $edit_condition['changed_result'], $role_key, false ) . '>' . esc_html( $role_info['name'] ) . '</option>';
+                            }
+                            ?>
+                            <!-- Kívánt eredmény -->
+                            <tr>
+                                <th scope="row">
+                                    <label for="changed_result"><?php _e( 'Kívánt eredmény', 'ebook-sales' ); ?></label>
+                                </th>
+                                <td>
+                                    <select name="changed_result" id="changed_result" required>
+                                        <?php echo $role_options; ?>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                        <?php submit_button( __( 'Mentés', 'ebook-sales' ) ); ?>
+                    </form>
+                    <script type="text/javascript">
+                        (function($) {
+                            function updateTestConditionDesc() {
+                                var testCondition = $('#test_condition').val();
+                                if(testCondition === 'support_donation' || testCondition === 'ebook_purchase'){
+                                    $('#comparison_fields, #amount_field').show();
+                                    $('#comparison_amount').attr('required', 'required');
+                                } else {
+                                    $('#comparison_fields, #amount_field').hide();
+                                    $('#comparison_amount').removeAttr('required');
+                                }
+                            }
+                            $('#test_condition').on('change', updateTestConditionDesc);
+                            updateTestConditionDesc();
+                        })(jQuery);
+                    </script>
+                    <?php
+                }
             } else { 
                 // Felső bal oldali "Add New" gomb és a feltétel lista
                 ?>
