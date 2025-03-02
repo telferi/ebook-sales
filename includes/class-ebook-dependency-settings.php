@@ -98,6 +98,7 @@ class Ebook_Dependency_Settings {
                         <tr>
                             <th><?php _e('ID', 'ebook-sales'); ?></th>
                             <th><?php _e('Vizsgált feltétel', 'ebook-sales'); ?></th>
+                            <th><?php _e('Felhasználó típusa', 'ebook-sales'); ?></th>
                             <th><?php _e('Változtatandó', 'ebook-sales'); ?></th>
                             <th><?php _e('Megváltoztatott eredmény', 'ebook-sales'); ?></th>
                             <th><?php _e('Műveletek', 'ebook-sales'); ?></th>
@@ -111,6 +112,12 @@ class Ebook_Dependency_Settings {
                                 echo '<tr>';
                                 echo '<td>' . esc_html( $condition['id'] ) . '</td>';
                                 echo '<td>' . esc_html( $condition['test_condition'] ) . '</td>';
+                                // Megjelenítjük a felhasználó típusát, átalakítva a megjelenítendő értékké
+                                $user_type = '';
+                                if ( isset($condition['user_type']) ) {
+                                    $user_type = ($condition['user_type'] === 'registered') ? __('Regisztrált Látogató', 'ebook-sales') : __('Vendég', 'ebook-sales');
+                                }
+                                echo '<td>' . esc_html( $user_type ) . '</td>';
                                 echo '<td>' . esc_html( $condition['to_change'] ) . '</td>';
                                 echo '<td>' . esc_html( $condition['changed_result'] ) . '</td>';
                                 echo '<td>';
@@ -122,7 +129,7 @@ class Ebook_Dependency_Settings {
                                 echo '</tr>';
                             }
                         } else {
-                            echo '<tr><td colspan="5">' . __('Nincs feltétel hozzáadva.', 'ebook-sales') . '</td></tr>';
+                            echo '<tr><td colspan="6">' . __('Nincs feltétel hozzáadva.', 'ebook-sales') . '</td></tr>';
                         }
                         ?>
                     </tbody>
