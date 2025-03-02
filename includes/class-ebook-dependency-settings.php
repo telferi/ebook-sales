@@ -72,6 +72,26 @@ class Ebook_Dependency_Settings {
                                 </p>
                             </td>
                         </tr>
+                        <tr id="comparison_fields" style="display:none;">
+                            <th scope="row">
+                                <label for="comparison_operator"><?php _e('Összehasonlító operátor', 'ebook-sales'); ?></label>
+                            </th>
+                            <td>
+                                <select name="comparison_operator" id="comparison_operator">
+                                    <option value="less"><?php _e('Kisebb', 'ebook-sales'); ?></option>
+                                    <option value="greater"><?php _e('Nagyobb', 'ebook-sales'); ?></option>
+                                    <option value="equal"><?php _e('Egyenlő', 'ebook-sales'); ?></option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr id="amount_field" style="display:none;">
+                            <th scope="row">
+                                <label for="comparison_amount"><?php _e('Összeg (USD)', 'ebook-sales'); ?></label>
+                            </th>
+                            <td>
+                                <input type="number" name="comparison_amount" id="comparison_amount" class="regular-text" min="5" step="0.01">
+                            </td>
+                        </tr>
                         <tr>
                             <th scope="row">
                                 <label for="to_change"><?php _e('Változtatandó', 'ebook-sales'); ?></label>
@@ -100,6 +120,7 @@ class Ebook_Dependency_Settings {
                     (function($){
                         function updateTestConditionDesc() {
                             var userType = $('#user_type').val();
+                            var testCondition = $('#test_condition').val();
                             var desc = '';
                             if(userType === 'guest') {
                                 desc = '<?php _e('Válaszd ki, hogy melyik esemény esetén történjen automatikus regisztráció és szerepkör hozzárendelés.', 'ebook-sales'); ?>';
@@ -107,9 +128,19 @@ class Ebook_Dependency_Settings {
                                 desc = '<?php _e('Válaszd ki, hogy melyik esemény esetén történjen szerepkör hozzárendelés.', 'ebook-sales'); ?>';
                             }
                             $('#test_condition_desc').text(desc);
+                            
+                            // Ha támogatás vagy ebook vásárlás, jelenjenek meg az extra mezők
+                            if(testCondition === 'support_donation' || testCondition === 'ebook_purchase'){
+                                $('#comparison_fields, #amount_field').show();
+                                // Ha szükséges, beállíthatod, hogy az amount mező kötelező legyen 
+                                $('#comparison_amount').attr('required', 'required');
+                            } else {
+                                $('#comparison_fields, #amount_field').hide();
+                                $('#comparison_amount').removeAttr('required');
+                            }
                         }
                         // Frissítjük a leírást, amikor a felhasználó típusa megváltozik
-                        $('#user_type').on('change', updateTestConditionDesc);
+                        $('#user_type, #test_condition').on('change', updateTestConditionDesc);
                         // Inicializáljuk a leírást
                         updateTestConditionDesc();
                     })(jQuery);
