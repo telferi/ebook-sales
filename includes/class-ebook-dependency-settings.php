@@ -46,7 +46,14 @@ class Ebook_Dependency_Settings {
                                 <label for="test_condition"><?php _e('Vizsgált feltétel', 'ebook-sales'); ?></label>
                             </th>
                             <td>
-                                <input type="text" name="test_condition" id="test_condition" class="regular-text" required>
+                                <select name="test_condition" id="test_condition" required>
+                                    <option value="social_share"><?php _e('Közösségi megosztás', 'ebook-sales'); ?></option>
+                                    <option value="support_donation"><?php _e('Támogatás', 'ebook-sales'); ?></option>
+                                    <option value="ebook_purchase"><?php _e('Ebook vásárlás', 'ebook-sales'); ?></option>
+                                </select>
+                                <p class="description">
+                                    <?php _e('Válaszd ki, hogy melyik esemény esetén történjen automatikus regisztráció és szerepkör hozzárendelés.', 'ebook-sales'); ?>
+                                </p>
                             </td>
                         </tr>
                         <tr>
