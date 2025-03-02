@@ -34,7 +34,17 @@ class Ebook_Role_Ranking_Settings {
 
     public function sanitize_role_ranking( $input ) {
         $output = [];
-        for ( $i = 1; $i <= 5; $i++ ) {
+        // Tároljuk el az elemek számát
+        $output['role_ranking_count'] = isset( $input['role_ranking_count'] ) ? intval( $input['role_ranking_count'] ) : 5;
+        // Csak 1 és 10 közötti értékre korlátozva
+        if ( $output['role_ranking_count'] < 1 ) {
+            $output['role_ranking_count'] = 1;
+        } elseif ( $output['role_ranking_count'] > 10 ) {
+            $output['role_ranking_count'] = 10;
+        }
+        $count = $output['role_ranking_count'];
+
+        for ( $i = 1; $i <= $count; $i++ ) {
             if ( isset( $input[ "role_rank_$i" ] ) ) {
                 $output[ "role_rank_$i" ] = sanitize_text_field( $input[ "role_rank_$i" ] );
             }
@@ -51,6 +61,8 @@ class Ebook_Role_Ranking_Settings {
                 <?php do_settings_sections( 'ebook_role_ranking_options' ); ?>
                 <?php
                 $options = get_option( 'ebook_role_ranking_settings' );
+                // Alapértelmezett elemek száma: 5
+                $count = isset( $options['role_ranking_count'] ) ? intval( $options['role_ranking_count'] ) : 5;
                 $editable_roles = get_editable_roles();
                 $role_options = '<option value="">' . esc_html__( 'Válassz egy szerepkört', 'ebook-sales' ) . '</option>';
                 foreach ( $editable_roles as $role_key => $role_info ) {
@@ -61,14 +73,24 @@ class Ebook_Role_Ranking_Settings {
                 }
                 ?>
                 <table class="form-table">
-                    <?php for ( $i = 1; $i <= 5; $i++ ) : ?>
+                    <!-- Elemszám beállítása -->
+                    <tr>
+                        <th scope="row">
+                            <label for="role_ranking_count"><?php _e('Elemek száma', 'ebook-sales'); ?></label>
+                        </th>
+                        <td>
+                            <input type="number" name="ebook_role_ranking_settings[role_ranking_count]" id="role_ranking_count" value="<?php echo esc_attr( $count ); ?>" min="1" max="10">
+                            <p class="description"><?php _e('Add meg, hány szerepkör rangot szeretnél beállítani (1-10 között).', 'ebook-sales'); ?></p>
+                        </td>
+                    </tr>
+                    <?php for ( $i = 1; $i <= $count; $i++ ) : ?>
                         <tr>
                             <th scope="row">
                                 <label for="role_rank_<?php echo $i; ?>">
                                     <?php echo sprintf(
                                         __( 'Szerepkör rang %d%s', 'ebook-sales' ),
                                         $i,
-                                        ( $i === 1 ? ' (' . __( 'legkisebb', 'ebook-sales' ) . ')' : ( $i === 5 ? ' (' . __( 'legnagyobb', 'ebook-sales' ) . ')' : '' ) )
+                                        ( $i === 1 ? ' (' . __( 'legkisebb', 'ebook-sales' ) . ')' : ( $i === $count ? ' (' . __( 'legnagyobb', 'ebook-sales' ) . ')' : '' ) )
                                     ); ?>
                                 </label>
                             </th>
