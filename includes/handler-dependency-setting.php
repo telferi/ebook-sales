@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 add_action( 'admin_post_save_dependency_condition', 'handle_save_dependency_condition' );
+add_action( 'admin_post_delete_dependency_condition', 'handle_delete_dependency_condition' );
 
 function handle_save_dependency_condition() {
     // Ellenőrizd a nonce-t
@@ -36,6 +37,33 @@ function handle_save_dependency_condition() {
     update_option( 'ebook_dependency_conditions', $conditions );
 
     // Átirányítás vissza a Dependency Settings oldalra
+    wp_redirect( admin_url( 'admin.php?page=ebook-dependency-settings' ) );
+    exit;
+}
+
+function handle_delete_dependency_condition() {
+    // Ellenőrizzük, hogy van-e id
+    if ( ! isset( $_GET['id'] ) ) {
+        wp_die( __( 'Nincs megadva azonosító', 'ebook-sales' ) );
+    }
+    $id = intval( $_GET['id'] );
+
+    // Nonce ellenőrzés
+    if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'delete_dependency_condition_' . $id ) ) {
+        wp_die( __( 'Érvénytelen nonce', 'ebook-sales' ) );
+    }
+
+    // Lekérjük a mentett feltételeket
+    $conditions = get_option( 'ebook_dependency_conditions', array() );
+    foreach ( $conditions as $key => $condition ) {
+        if ( intval( $condition['id'] ) === $id ) {
+            unset( $conditions[ $key ] );
+            break;
+        }
+    }
+    // Újraszámozzuk a tömböt, és mentjük
+    update_option( 'ebook_dependency_conditions', array_values( $conditions ) );
+
     wp_redirect( admin_url( 'admin.php?page=ebook-dependency-settings' ) );
     exit;
 }
