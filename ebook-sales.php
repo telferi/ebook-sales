@@ -36,6 +36,7 @@ require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-payment-admin.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-stripe-subscription-handler.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-dependency-settings.php'; 
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-role-ranking-settings.php';// Új
+require_once EBOOK_SALES_PLUGIN_DIR . 'includes/handler-dependency-setting.php';
 
 // Aktiválás/deaktiválás
 register_activation_hook(__FILE__, function() {
