@@ -51,6 +51,17 @@ class Ebook_Dependency_Settings {
                         </tr>
                         <tr>
                             <th scope="row">
+                                <label for="user_type"><?php _e('Felhasználó típusa', 'ebook-sales'); ?></label>
+                            </th>
+                            <td>
+                                <select name="user_type" id="user_type">
+                                    <option value="registered"><?php _e('Regisztrált Látogató', 'ebook-sales'); ?></option>
+                                    <option value="guest"><?php _e('Vendég', 'ebook-sales'); ?></option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
                                 <label for="to_change"><?php _e('Változtatandó', 'ebook-sales'); ?></label>
                             </th>
                             <td>
