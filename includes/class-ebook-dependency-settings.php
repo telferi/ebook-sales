@@ -95,14 +95,6 @@ class Ebook_Dependency_Settings {
                                 <input type="number" name="comparison_amount" id="comparison_amount" class="regular-text" min="1" step="0.01">
                             </td>
                         </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="changed_result"><?php _e('Megváltoztatott eredmény', 'ebook-sales'); ?></label>
-                            </th>
-                            <td>
-                                <input type="text" name="changed_result" id="changed_result" class="regular-text" required>
-                            </td>
-                        </tr>
                         <?php
                         // Készítjük a szerepkör opciókat
                         $editable_roles = get_editable_roles();
@@ -160,6 +152,16 @@ class Ebook_Dependency_Settings {
                             </th>
                             <td>
                                 <select name="role_rank_5" id="role_rank_5">
+                                    <?php echo $role_options; ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="changed_result"><?php _e('Kívánt eredmény', 'ebook-sales'); ?></label>
+                            </th>
+                            <td>
+                                <select name="changed_result" id="changed_result" required>
                                     <?php echo $role_options; ?>
                                 </select>
                             </td>
