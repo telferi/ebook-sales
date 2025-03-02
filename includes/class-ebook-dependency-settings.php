@@ -95,6 +95,7 @@ class Ebook_Dependency_Settings {
                                 <input type="number" name="comparison_amount" id="comparison_amount" class="regular-text" min="1" step="0.01">
                             </td>
                         </tr>
+                        <!--
                         <tr>
                             <th scope="row">
                                 <label for="to_change"><?php _e('Változtatandó', 'ebook-sales'); ?></label>
@@ -103,6 +104,7 @@ class Ebook_Dependency_Settings {
                                 <input type="text" name="to_change" id="to_change" class="regular-text" required>
                             </td>
                         </tr>
+                        -->
                         <tr>
                             <th scope="row">
                                 <label for="changed_result"><?php _e('Megváltoztatott eredmény', 'ebook-sales'); ?></label>
