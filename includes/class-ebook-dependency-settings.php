@@ -81,6 +81,9 @@ class Ebook_Dependency_Settings {
                                     <option value="less"><?php _e('Kisebb', 'ebook-sales'); ?></option>
                                     <option value="greater"><?php _e('Nagyobb', 'ebook-sales'); ?></option>
                                     <option value="equal"><?php _e('Egyenlő', 'ebook-sales'); ?></option>
+                                    <option value="ge"><?php _e('Nagyobb vagy egyenlő', 'ebook-sales'); ?></option>
+                                    <option value="le"><?php _e('Kisebb vagy egyenlő', 'ebook-sales'); ?></option>
+                                    <option value="neq"><?php _e('Nem egyenlő', 'ebook-sales'); ?></option>
                                 </select>
                             </td>
                         </tr>
