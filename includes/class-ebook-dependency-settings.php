@@ -31,7 +31,7 @@ class Ebook_Dependency_Settings {
         <div class="wrap">
             <h1><?php _e('Függőségi beállítások', 'ebook-sales'); ?></h1>
             <?php
-            // Ha új feltétel hozzáadására kerül sor
+            // Új feltétel hozzáadásának űrlapja
             if ( isset($_GET['action']) && $_GET['action'] == 'new' ) {
                 ?>
                 <h2><?php _e('Új feltétel hozzáadása', 'ebook-sales'); ?></h2>
@@ -41,7 +41,7 @@ class Ebook_Dependency_Settings {
                     ?>
                     <input type="hidden" name="action" value="save_dependency_condition">
                     <table class="form-table">
-                        <!-- Első mező: Felhasználó típusa -->
+                        <!-- Felhasználó típusa -->
                         <tr>
                             <th scope="row">
                                 <label for="user_type"><?php _e('Felhasználó típusa', 'ebook-sales'); ?></label>
@@ -53,7 +53,7 @@ class Ebook_Dependency_Settings {
                                 </select>
                             </td>
                         </tr>
-                        <!-- Második mező: Vizsgált feltétel -->
+                        <!-- Vizsgált feltétel -->
                         <tr>
                             <th scope="row">
                                 <label for="test_condition"><?php _e('Vizsgált feltétel', 'ebook-sales'); ?></label>
@@ -66,12 +66,13 @@ class Ebook_Dependency_Settings {
                                 </select>
                                 <p class="description" id="test_condition_desc">
                                     <?php 
-                                    // A default: mivel a default felhasználó típus 'registered'
+                                    // Default: regisztrált felhasználó esetén
                                     _e('Válaszd ki, hogy melyik esemény esetén történjen szerepkör hozzárendelés.', 'ebook-sales'); 
                                     ?>
                                 </p>
                             </td>
                         </tr>
+                        <!-- Extra mezők támogatás vagy ebook vásárlás esetén -->
                         <tr id="comparison_fields" style="display:none;">
                             <th scope="row">
                                 <label for="comparison_operator"><?php _e('Összehasonlító operátor', 'ebook-sales'); ?></label>
@@ -96,7 +97,7 @@ class Ebook_Dependency_Settings {
                             </td>
                         </tr>
                         <?php
-                        // Készítjük a szerepkör opciókat
+                        // Szerepkör opciók elkészítése
                         $editable_roles = get_editable_roles();
                         $role_options = '<option value="">' . esc_html__('Válassz egy szerepkört', 'ebook-sales') . '</option>';
                         foreach ( $editable_roles as $role_key => $role_info ) {
@@ -106,56 +107,7 @@ class Ebook_Dependency_Settings {
                             $role_options .= '<option value="' . esc_attr($role_key) . '">' . esc_html($role_info['name']) . '</option>';
                         }
                         ?>
-                        <tr>
-                            <th scope="row">
-                                <label for="role_rank_1"><?php _e('Szerepkör rang 1 (legkisebb)', 'ebook-sales'); ?></label>
-                            </th>
-                            <td>
-                                <select name="role_rank_1" id="role_rank_1">
-                                    <?php echo $role_options; ?>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="role_rank_2"><?php _e('Szerepkör rang 2', 'ebook-sales'); ?></label>
-                            </th>
-                            <td>
-                                <select name="role_rank_2" id="role_rank_2">
-                                    <?php echo $role_options; ?>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="role_rank_3"><?php _e('Szerepkör rang 3', 'ebook-sales'); ?></label>
-                            </th>
-                            <td>
-                                <select name="role_rank_3" id="role_rank_3">
-                                    <?php echo $role_options; ?>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="role_rank_4"><?php _e('Szerepkör rang 4', 'ebook-sales'); ?></label>
-                            </th>
-                            <td>
-                                <select name="role_rank_4" id="role_rank_4">
-                                    <?php echo $role_options; ?>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="role_rank_5"><?php _e('Szerepkör rang 5 (legnagyobb)', 'ebook-sales'); ?></label>
-                            </th>
-                            <td>
-                                <select name="role_rank_5" id="role_rank_5">
-                                    <?php echo $role_options; ?>
-                                </select>
-                            </td>
-                        </tr>
+                        <!-- Kívánt eredmény (a mező, ahol szerepkörök választhatók) -->
                         <tr>
                             <th scope="row">
                                 <label for="changed_result"><?php _e('Kívánt eredmény', 'ebook-sales'); ?></label>
@@ -190,16 +142,13 @@ class Ebook_Dependency_Settings {
                             // Ha támogatás vagy ebook vásárlás, jelenjenek meg az extra mezők
                             if(testCondition === 'support_donation' || testCondition === 'ebook_purchase'){
                                 $('#comparison_fields, #amount_field').show();
-                                // Ha szükséges, beállíthatod, hogy az amount mező kötelező legyen 
                                 $('#comparison_amount').attr('required', 'required');
                             } else {
                                 $('#comparison_fields, #amount_field').hide();
                                 $('#comparison_amount').removeAttr('required');
                             }
                         }
-                        // Frissítjük a leírást, amikor a felhasználó típusa megváltozik
                         $('#user_type, #test_condition').on('change', updateTestConditionDesc);
-                        // Inicializáljuk a leírást
                         updateTestConditionDesc();
                     })(jQuery);
                 </script>
@@ -218,8 +167,7 @@ class Ebook_Dependency_Settings {
                             <th><?php _e('ID', 'ebook-sales'); ?></th>
                             <th><?php _e('Vizsgált feltétel', 'ebook-sales'); ?></th>
                             <th><?php _e('Felhasználó típusa', 'ebook-sales'); ?></th>
-                            <th><?php _e('Változtatandó', 'ebook-sales'); ?></th>
-                            <th><?php _e('Megváltoztatott eredmény', 'ebook-sales'); ?></th>
+                            <th><?php _e('Kívánt eredmény', 'ebook-sales'); ?></th>
                             <th><?php _e('Műveletek', 'ebook-sales'); ?></th>
                         </tr>
                     </thead>
@@ -231,13 +179,11 @@ class Ebook_Dependency_Settings {
                                 echo '<tr>';
                                 echo '<td>' . esc_html( $condition['id'] ) . '</td>';
                                 echo '<td>' . esc_html( $condition['test_condition'] ) . '</td>';
-                                // Megjelenítjük a felhasználó típusát, átalakítva a megjelenítendő értékké
                                 $user_type = '';
                                 if ( isset($condition['user_type']) ) {
                                     $user_type = ($condition['user_type'] === 'registered') ? __('Regisztrált Látogató', 'ebook-sales') : __('Vendég', 'ebook-sales');
                                 }
                                 echo '<td>' . esc_html( $user_type ) . '</td>';
-                                echo '<td>' . esc_html( $condition['to_change'] ) . '</td>';
                                 echo '<td>' . esc_html( $condition['changed_result'] ) . '</td>';
                                 echo '<td>';
                                 $edit_url = admin_url('admin.php?page=ebook-dependency-settings&action=edit&id=' . intval($condition['id']));
@@ -248,7 +194,7 @@ class Ebook_Dependency_Settings {
                                 echo '</tr>';
                             }
                         } else {
-                            echo '<tr><td colspan="6">' . __('Nincs feltétel hozzáadva.', 'ebook-sales') . '</td></tr>';
+                            echo '<tr><td colspan="5">' . __('Nincs feltétel hozzáadva.', 'ebook-sales') . '</td></tr>';
                         }
                         ?>
                     </tbody>
