@@ -92,7 +92,7 @@ class Ebook_Dependency_Settings {
                                 <label for="comparison_amount"><?php _e('Összeg (USD)', 'ebook-sales'); ?></label>
                             </th>
                             <td>
-                                <input type="number" name="comparison_amount" id="comparison_amount" class="regular-text" min="5" step="0.01">
+                                <input type="number" name="comparison_amount" id="comparison_amount" class="regular-text" min="1" step="0.01">
                             </td>
                         </tr>
                         <tr>
