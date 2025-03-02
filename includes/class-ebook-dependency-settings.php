@@ -41,6 +41,19 @@ class Ebook_Dependency_Settings {
                     ?>
                     <input type="hidden" name="action" value="save_dependency_condition">
                     <table class="form-table">
+                        <!-- Első mező: Felhasználó típusa -->
+                        <tr>
+                            <th scope="row">
+                                <label for="user_type"><?php _e('Felhasználó típusa', 'ebook-sales'); ?></label>
+                            </th>
+                            <td>
+                                <select name="user_type" id="user_type">
+                                    <option value="registered"><?php _e('Regisztrált Látogató', 'ebook-sales'); ?></option>
+                                    <option value="guest"><?php _e('Vendég', 'ebook-sales'); ?></option>
+                                </select>
+                            </td>
+                        </tr>
+                        <!-- Második mező: Vizsgált feltétel -->
                         <tr>
                             <th scope="row">
                                 <label for="test_condition"><?php _e('Vizsgált feltétel', 'ebook-sales'); ?></label>
@@ -51,20 +64,12 @@ class Ebook_Dependency_Settings {
                                     <option value="support_donation"><?php _e('Támogatás', 'ebook-sales'); ?></option>
                                     <option value="ebook_purchase"><?php _e('Ebook vásárlás', 'ebook-sales'); ?></option>
                                 </select>
-                                <p class="description">
-                                    <?php _e('Válaszd ki, hogy melyik esemény esetén történjen automatikus regisztráció és szerepkör hozzárendelés.', 'ebook-sales'); ?>
+                                <p class="description" id="test_condition_desc">
+                                    <?php 
+                                    // A default: mivel a default felhasználó típus 'registered'
+                                    _e('Válaszd ki, hogy melyik esemény esetén történjen szerepkör hozzárendelés.', 'ebook-sales'); 
+                                    ?>
                                 </p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="user_type"><?php _e('Felhasználó típusa', 'ebook-sales'); ?></label>
-                            </th>
-                            <td>
-                                <select name="user_type" id="user_type">
-                                    <option value="registered"><?php _e('Regisztrált Látogató', 'ebook-sales'); ?></option>
-                                    <option value="guest"><?php _e('Vendég', 'ebook-sales'); ?></option>
-                                </select>
                             </td>
                         </tr>
                         <tr>
@@ -91,6 +96,24 @@ class Ebook_Dependency_Settings {
                         &laquo; <?php _e('Vissza a listához', 'ebook-sales'); ?>
                     </a>
                 </p>
+                <script type="text/javascript">
+                    (function($){
+                        function updateTestConditionDesc() {
+                            var userType = $('#user_type').val();
+                            var desc = '';
+                            if(userType === 'guest') {
+                                desc = '<?php _e('Válaszd ki, hogy melyik esemény esetén történjen automatikus regisztráció és szerepkör hozzárendelés.', 'ebook-sales'); ?>';
+                            } else {
+                                desc = '<?php _e('Válaszd ki, hogy melyik esemény esetén történjen szerepkör hozzárendelés.', 'ebook-sales'); ?>';
+                            }
+                            $('#test_condition_desc').text(desc);
+                        }
+                        // Frissítjük a leírást, amikor a felhasználó típusa megváltozik
+                        $('#user_type').on('change', updateTestConditionDesc);
+                        // Inicializáljuk a leírást
+                        updateTestConditionDesc();
+                    })(jQuery);
+                </script>
                 <?php
             } else { 
                 // Felső bal oldali "Add New" gomb és a feltétel lista
