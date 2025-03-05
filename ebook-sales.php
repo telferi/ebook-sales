@@ -3,7 +3,7 @@
 Plugin Name: Ebook Sales
 Plugin URI: https://metaliverail.hu/
 Description: A plugin to manage and sell ebooks/subscriptions on your WordPress site.
-Version: 2.0.0
+Version: 2.1.0
 Author: Frank Smith
 Author URI: https://metaliverail.hu/
 Text Domain: ebook-sales
@@ -37,6 +37,7 @@ require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-stripe-subscription-handle
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-dependency-settings.php'; 
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-role-ranking-settings.php';// Új
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/handler-dependency-setting.php';
+require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-delete-trash.php';
 
 // Aktiválás/deaktiválás
 register_activation_hook(__FILE__, function() {
