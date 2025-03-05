@@ -290,17 +290,17 @@ function handle_save_ebook_file_ajax(){
         }
     }
     
-    // Egyedi fájlnév meghatározás az ebook fájlhoz
+    // Ebook fájl: használjuk a wp_unique_filename eredményét (amely már tartalmazza a kiterjesztést)
     $ebook_unique_name = wp_unique_filename($target_dir, $ebook_filename);
     $ebook_target_file = $target_dir . '/' . $ebook_unique_name;
     
-    // A borító kép esetén módosítjuk a fájlnév alapját az ebook fájl nevére, de megtartjuk a borító kép kiterjesztését
-    $ebook_name_without_ext = pathinfo($ebook_unique_name, PATHINFO_FILENAME);
-    $cover_unique_name = $ebook_name_without_ext . '.' . $cover_file_ext;
+    // Borító kép: használjuk az ebook fájl base nevét (kiterjesztés nélkül) az új névhez,
+    // majd fűzzük hozzá a cover kép saját kiterjesztését.
+    $ebook_base = pathinfo($ebook_unique_name, PATHINFO_FILENAME);
+    $cover_unique_name = $ebook_base . '.' . $cover_file_ext;
     $cover_target_file = $target_dir . '/' . $cover_unique_name;
     
-    // Fájlok feltöltése
-    // Ne töltsük fel, ha bármelyik move_uploaded_file sikertelen
+    // Fájlok feltöltése – csak akkor, ha mindkettő sikeres
     if (move_uploaded_file($_FILES['ebook_file']['tmp_name'], $ebook_target_file) &&
         move_uploaded_file($_FILES['cover_image']['tmp_name'], $cover_target_file)) {
         
