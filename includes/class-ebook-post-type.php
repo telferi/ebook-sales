@@ -82,12 +82,43 @@ function ebook_file_meta_box_callback($post) {
     $ebook_file = get_post_meta($post->ID, '_ebook_file', true);
     ?>
     <p>
-        <label for="ebook_file"><?php _e('Válassz egy ebook fájlt (PDF, EPUB, MOBI):', 'ebook-sales'); ?></label><br>
-        <input type="file" id="ebook_file" name="ebook_file" accept=".pdf,.epub,.mobi">
+        <label for="ebook_file"><?php _e('Ebook fájl URL (PDF, EPUB, MOBI):', 'ebook-sales'); ?></label><br>
+        <input type="text" id="ebook_file" name="ebook_file" value="<?php echo esc_url($ebook_file); ?>" style="width:80%;" readonly>
+        <input type="button" id="ebook_file_upload_button" class="button" value="<?php _e('Feltöltés', 'ebook-sales'); ?>">
     </p>
-    <?php if($ebook_file) : ?>
+    <?php if ($ebook_file) : ?>
         <p><?php _e('Jelenlegi fájl:', 'ebook-sales'); ?> <a href="<?php echo esc_url($ebook_file); ?>" target="_blank"><?php echo esc_html($ebook_file); ?></a></p>
     <?php endif;
+    ?>
+    <script type="text/javascript">
+    jQuery(document).ready(function($){
+        var file_frame;
+        $('#ebook_file_upload_button').on('click', function(e) {
+            e.preventDefault();
+            // Ha már létezik a frame, akkor nyisd meg újra.
+            if ( file_frame ) {
+                file_frame.open();
+                return;
+            }
+            // Új media frame létrehozása
+            file_frame = wp.media.frames.file_frame = wp.media({
+                title: '<?php _e('Ebook fájl feltöltése', 'ebook-sales'); ?>',
+                button: {
+                    text: '<?php _e('Használja ezt a fájlt', 'ebook-sales'); ?>',
+                },
+                library: { type: [ 'application/pdf', 'application/epub+zip', 'application/x-mobipocket-ebook' ] },
+                multiple: false
+            });
+            // Amikor kiválasztásra kerül
+            file_frame.on('select', function(){
+                var attachment = file_frame.state().get('selection').first().toJSON();
+                $('#ebook_file').val(attachment.url);
+            });
+            file_frame.open();
+        });
+    });
+    </script>
+    <?php
 }
 
 add_action('save_post', 'save_ebook_file_meta_box');
@@ -103,35 +134,26 @@ function save_ebook_file_meta_box($post_id) {
         return;
     }
     
-    // Fájl feltöltés ellenőrzése:
-    if (!empty($_FILES['ebook_file']['name'])) {
-        // Definiáljuk az elfogadott MIME típusokat
-        $allowed_mimes = array(
-            'application/pdf',              // PDF
-            'application/epub+zip',         // EPUB
-            'application/x-mobipocket-ebook'// MOBI (nem minden szerveren, ellenőrizd a MIME-t)
-        );
-        
-        // Ellenőrizzük a fájl MIME típusát
-        $file_info = wp_check_filetype(basename($_FILES['ebook_file']['name']));
-        if (!in_array($file_info['type'], $allowed_mimes)) {
-            // Hibát rögzítünk egy átmeneti üzenetben és visszaváltjuk a post státuszát vázlatba
+    // Fájl URL ellenőrzése:
+    if (!empty($_POST['ebook_file'])) {
+        $file_url = esc_url_raw($_POST['ebook_file']);
+        // Egyszerű ellenőrzés: győződjünk meg arról, hogy a végződés megfelelő
+        $allowed_exts = array('.pdf', '.epub', '.mobi');
+        $valid = false;
+        foreach($allowed_exts as $ext) {
+            if (stripos($file_url, $ext) !== false) {
+                $valid = true;
+                break;
+            }
+        }
+        if (!$valid) {
             set_transient("ebook_file_error_$post_id", __('Kérjük, tölts fel PDF, EPUB vagy MOBI típusú fájlt!', 'ebook-sales'), 45);
-            // Állítsuk vissza a posztot vázlatba
             wp_update_post(array('ID' => $post_id, 'post_status' => 'draft'));
             return;
         }
-        
-        // Fájl feltöltése a WordPress feltöltés rendszerrel
-        require_once(ABSPATH . 'wp-admin/includes/file.php');
-        $upload_overrides = array('test_form' => false);
-        $uploaded_file = wp_handle_upload($_FILES['ebook_file'], $upload_overrides);
-    
-        if (isset($uploaded_file['url'])) {
-            update_post_meta($post_id, '_ebook_file', esc_url_raw($uploaded_file['url']));
-        }
+        update_post_meta($post_id, '_ebook_file', esc_url_raw($file_url));
     } else {
-        // Ha nincs fájl feltöltve és a poszt publikus, értesítsük a felhasználót!
+        // Ha nincs fájl URL és a poszt publikus, hibaüzenettel állítjuk vissza a posztot vázlatba.
         $post = get_post($post_id);
         if ($post->post_status == 'publish') {
             set_transient("ebook_file_error_$post_id", __('Ebook fájl kötelező!', 'ebook-sales'), 45);
