@@ -63,3 +63,109 @@ class Ebook_Post_Type {
 }
 
 new Ebook_Post_Type();
+
+// Metabox regisztrálása az ebook posztokhoz
+add_action('add_meta_boxes', 'ebook_add_meta_box');
+function ebook_add_meta_box() {
+    add_meta_box(
+        'ebook_file_metabox',
+        __('Ebook fájl feltöltése', 'ebook-sales'),
+        'ebook_file_meta_box_callback',
+        'ebook',
+        'normal',
+        'default'
+    );
+}
+
+function ebook_file_meta_box_callback($post) {
+    wp_nonce_field('save_ebook_file', 'ebook_file_nonce');
+    $ebook_file = get_post_meta($post->ID, '_ebook_file', true);
+    ?>
+    <p>
+        <label for="ebook_file"><?php _e('Válassz egy ebook fájlt (PDF, EPUB, MOBI):', 'ebook-sales'); ?></label><br>
+        <input type="file" id="ebook_file" name="ebook_file" accept=".pdf,.epub,.mobi">
+    </p>
+    <?php if($ebook_file) : ?>
+        <p><?php _e('Jelenlegi fájl:', 'ebook-sales'); ?> <a href="<?php echo esc_url($ebook_file); ?>" target="_blank"><?php echo esc_html($ebook_file); ?></a></p>
+    <?php endif;
+}
+
+add_action('save_post', 'save_ebook_file_meta_box');
+function save_ebook_file_meta_box($post_id) {
+    // Ellenőrzés: nonce, autosave, jogosultság
+    if (!isset($_POST['ebook_file_nonce']) || !wp_verify_nonce($_POST['ebook_file_nonce'], 'save_ebook_file')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+    
+    // Fájl feltöltés ellenőrzése:
+    if (!empty($_FILES['ebook_file']['name'])) {
+        // Definiáljuk az elfogadott MIME típusokat
+        $allowed_mimes = array(
+            'application/pdf',              // PDF
+            'application/epub+zip',         // EPUB
+            'application/x-mobipocket-ebook'// MOBI (nem minden szerveren, ellenőrizd a MIME-t)
+        );
+        
+        // Ellenőrizzük a fájl MIME típusát
+        $file_info = wp_check_filetype(basename($_FILES['ebook_file']['name']));
+        if (!in_array($file_info['type'], $allowed_mimes)) {
+            // Hibát rögzítünk egy átmeneti üzenetben és visszaváltjuk a post státuszát vázlatba
+            set_transient("ebook_file_error_$post_id", __('Kérjük, tölts fel PDF, EPUB vagy MOBI típusú fájlt!', 'ebook-sales'), 45);
+            // Állítsuk vissza a posztot vázlatba
+            wp_update_post(array('ID' => $post_id, 'post_status' => 'draft'));
+            return;
+        }
+        
+        // Fájl feltöltése a WordPress feltöltés rendszerrel
+        require_once(ABSPATH . 'wp-admin/includes/file.php');
+        $upload_overrides = array('test_form' => false);
+        $uploaded_file = wp_handle_upload($_FILES['ebook_file'], $upload_overrides);
+    
+        if (isset($uploaded_file['url'])) {
+            update_post_meta($post_id, '_ebook_file', esc_url_raw($uploaded_file['url']));
+        }
+    } else {
+        // Ha nincs fájl feltöltve és a poszt publikus, értesítsük a felhasználót!
+        $post = get_post($post_id);
+        if ($post->post_status == 'publish') {
+            set_transient("ebook_file_error_$post_id", __('Ebook fájl kötelező!', 'ebook-sales'), 45);
+            wp_update_post(array('ID' => $post_id, 'post_status' => 'draft'));
+        }
+    }
+}
+
+add_action('admin_notices', 'ebook_file_admin_notice');
+function ebook_file_admin_notice() {
+    global $post;
+    if (isset($post->ID)) {
+        if ($error = get_transient("ebook_file_error_{$post->ID}")) {
+            echo '<div class="error notice"><p>' . esc_html($error) . '</p></div>';
+            delete_transient("ebook_file_error_{$post->ID}");
+        }
+    }
+}
+
+// Egyedi oszlop hozzáadása a 'ebook' post listához
+add_filter('manage_ebook_posts_columns', 'set_custom_ebook_columns');
+function set_custom_ebook_columns($columns) {
+    $columns['ebook_file'] = __('Ebook fájl', 'ebook-sales');
+    return $columns;
+}
+
+add_action('manage_ebook_posts_custom_column', 'custom_ebook_column', 10, 2);
+function custom_ebook_column($column, $post_id) {
+    if ($column == 'ebook_file') {
+        $ebook_file = get_post_meta($post_id, '_ebook_file', true);
+        if ($ebook_file) {
+            echo '<a href="' . esc_url($ebook_file) . '" target="_blank">' . __('Megtekint', 'ebook-sales') . '</a>';
+        } else {
+            _e('Nincs fájl', 'ebook-sales');
+        }
+    }
+}
