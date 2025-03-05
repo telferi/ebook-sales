@@ -217,7 +217,9 @@ function ebook_file_admin_notice() {
 // Egyedi oszlop hozzáadása a 'ebook' post listához
 add_filter('manage_ebook_posts_columns', 'set_custom_ebook_columns');
 function set_custom_ebook_columns($columns) {
+    // Megtartjuk a meglévő oszlopokat, majd hozzáadjuk az ebook fájl és borító kép oszlopokat.
     $columns['ebook_file'] = __('Ebook fájl', 'ebook-sales');
+    $columns['cover_image'] = __('Borító kép', 'ebook-sales');
     return $columns;
 }
 
@@ -230,8 +232,16 @@ function custom_ebook_column($column, $post_id) {
         } else {
             _e('Nincs fájl', 'ebook-sales');
         }
+    } elseif ($column == 'cover_image') {
+        $cover_image = get_post_meta($post_id, '_cover_image', true);
+        if ($cover_image) {
+            echo '<a href="' . esc_url($cover_image) . '" target="_blank">' . __('Megtekint', 'ebook-sales') . '</a>';
+        } else {
+            _e('Nincs kép', 'ebook-sales');
+        }
     }
 }
+
 add_action('wp_ajax_save_ebook_file_ajax', 'handle_save_ebook_file_ajax');
 function handle_save_ebook_file_ajax(){
     // Ellenőrzés: nonce és post ID
