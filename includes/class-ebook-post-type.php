@@ -85,12 +85,53 @@ function ebook_file_meta_box_callback($post) {
         <label for="ebook_file"><?php _e('Válassza ki az ebook fájlt (PDF, EPUB, MOBI):', 'ebook-sales'); ?></label><br>
         <input type="file" id="ebook_file" name="ebook_file" accept=".pdf,.epub,.mobi" />
     </p>
+    <p>
+        <button type="button" id="ebook_file_save" class="button"><?php _e('Mentés', 'ebook-sales'); ?></button>
+    </p>
+    <div id="ebook_file_message"></div>
     <?php if ($ebook_file) : ?>
         <p>
             <?php _e('Jelenlegi fájl:', 'ebook-sales'); ?>
             <a href="<?php echo esc_url($ebook_file); ?>" target="_blank"><?php echo esc_html(basename($ebook_file)); ?></a>
         </p>
-    <?php endif;
+    <?php endif; ?>
+    <script type="text/javascript">
+    jQuery(document).ready(function($){
+        $('#ebook_file_save').on('click', function(e) {
+            e.preventDefault();
+            var fileInput = $('#ebook_file')[0];
+            if (fileInput.files.length === 0) {
+                alert('<?php _e('Kérjük, válassza ki a fájlt!', 'ebook-sales'); ?>');
+                return;
+            }
+            var file = fileInput.files[0];
+            var formData = new FormData();
+            formData.append('ebook_file', file);
+            formData.append('post_id', <?php echo $post->ID; ?>);
+            formData.append('action', 'save_ebook_file_ajax');
+            formData.append('ebook_file_nonce', $('#ebook_file_nonce').val());
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response){
+                    if(response.success) {
+                        $('#ebook_file_message').html('<span style="color:green;">' + response.data.message + '</span>');
+                    } else {
+                        $('#ebook_file_message').html('<span style="color:red;">' + response.data.message + '</span>');
+                    }
+                },
+                error: function(){
+                    $('#ebook_file_message').html('<span style="color:red;"><?php _e("Fájl feltöltési hiba", "ebook-sales"); ?></span>');
+                }
+            });
+        });
+    });
+    </script>
+    <?php
 }
 
 add_action('save_post', 'save_ebook_file_meta_box');
@@ -175,5 +216,49 @@ function custom_ebook_column($column, $post_id) {
         } else {
             _e('Nincs fájl', 'ebook-sales');
         }
+    }
+}
+add_action('wp_ajax_save_ebook_file_ajax', 'handle_save_ebook_file_ajax');
+function handle_save_ebook_file_ajax(){
+    // Ellenőrzés: nonce és post ID
+    if ( ! isset($_POST['ebook_file_nonce']) || ! wp_verify_nonce($_POST['ebook_file_nonce'], 'save_ebook_file') ) {
+        wp_send_json_error(array('message' => __('Érvénytelen nonce!', 'ebook-sales')));
+    }
+    if (!isset($_POST['post_id'])) {
+        wp_send_json_error(array('message' => __('Hiányzó post ID!', 'ebook-sales')));
+    }
+    $post_id = intval($_POST['post_id']);
+    
+    // Ellenőrizzük a fájlfeltöltést
+    if (!isset($_FILES['ebook_file']) || empty($_FILES['ebook_file']['name'])) {
+        wp_send_json_error(array('message' => __('Nincs fájl kiválasztva!', 'ebook-sales')));
+    }
+    
+    // Ellenőrzés: engedélyezett kiterjesztések
+    $allowed_exts = array('pdf', 'epub', 'mobi');
+    $filename = sanitize_file_name($_FILES['ebook_file']['name']);
+    $file_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    if (!in_array($file_ext, $allowed_exts)) {
+        wp_send_json_error(array('message' => __('Kérjük, tölts fel PDF, EPUB vagy MOBI típusú fájlt!', 'ebook-sales')));
+    }
+    
+    // Célmappa: wp-content/uploads/protected_ebooks
+    $upload = wp_upload_dir();
+    $target_dir = $upload['basedir'] . '/protected_ebooks';
+    if (!file_exists($target_dir)) {
+        if (!wp_mkdir_p($target_dir)) {
+            wp_send_json_error(array('message' => __('Nem sikerült létrehozni a célmappát.', 'ebook-sales')));
+        }
+    }
+    // Egyedi fájlnév meghatározása
+    $filename = wp_unique_filename($target_dir, $filename);
+    $target_file = $target_dir . '/' . $filename;
+    
+    if (move_uploaded_file($_FILES['ebook_file']['tmp_name'], $target_file)) {
+        $file_url = $upload['baseurl'] . '/protected_ebooks/' . $filename;
+        update_post_meta($post_id, '_ebook_file', esc_url_raw($file_url));
+        wp_send_json_success(array('message' => sprintf(__('Feltöltés sikeres: %s', 'ebook-sales'), $filename)));
+    } else {
+        wp_send_json_error(array('message' => __('Fájl feltöltési hiba történt!', 'ebook-sales')));
     }
 }
