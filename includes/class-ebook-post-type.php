@@ -185,7 +185,7 @@ function save_ebook_file_meta_box($post_id) {
 
         // Fájl feltöltése
         if (move_uploaded_file($_FILES['ebook_file']['tmp_name'], $target_file)) {
-            // Állítsuk be a fájl URL-jét (a protected_ebooks mappa URL-je is elérhető lehet, de biztonsági beállításokat alkalmazhatsz .htaccess-ben)
+            // Állítsuk be a fájl URL-jét
             $file_url = $upload['baseurl'] . '/protected_ebooks/' . $filename;
             update_post_meta($post_id, '_ebook_file', esc_url_raw($file_url));
         } else {
@@ -193,12 +193,16 @@ function save_ebook_file_meta_box($post_id) {
             wp_update_post(array('ID' => $post_id, 'post_status' => 'draft'));
             return;
         }
-    } else {
-        // Ha nincs fájl URL és a poszt publikus, hibaüzenettel állítjuk vissza a posztot vázlatba.
-        $post = get_post($post_id);
-        if ($post->post_status == 'publish') {
-            set_transient("ebook_file_error_$post_id", __('Ebook fájl kötelező!', 'ebook-sales'), 45);
+    }
+    // Ha nincs fájl URL és a poszt publikus, állítsuk vissza a posztot vázlatba.
+    $post = get_post($post_id);
+    if ($post->post_status == 'publish') {
+        $ebook_file = get_post_meta($post_id, '_ebook_file', true);
+        $cover_image = get_post_meta($post_id, '_cover_image', true);
+        if (empty($ebook_file) || empty($cover_image)) {
+            set_transient("ebook_file_error_$post_id", __('Az ebook fájl és a borító kép feltöltése kötelező a publikáláshoz!', 'ebook-sales'), 45);
             wp_update_post(array('ID' => $post_id, 'post_status' => 'draft'));
+            return;
         }
     }
 }
