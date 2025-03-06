@@ -311,6 +311,20 @@ function handle_save_ebook_file_ajax(){
         update_post_meta($post_id, '_ebook_file', esc_url_raw($ebook_file_url));
         update_post_meta($post_id, '_cover_image', esc_url_raw($cover_file_url));
         
+        // Ha a posztnak nincs címe, akkor az ebook fájl eredeti nevéből (kiterjesztés nélkül)
+        // állítjuk be a címet, ügyelve arra, hogy az első betű nagy legyen.
+        $post = get_post($post_id);
+        if (empty(trim($post->post_title))) {
+            $new_title = pathinfo($ebook_filename, PATHINFO_FILENAME);
+            // Használjuk a MB_CASE_TITLE-t, hogy támogatást kapjunk az ékezetes karakterekhez is.
+            $new_title = mb_convert_case($new_title, MB_CASE_TITLE, "UTF-8");
+            wp_update_post(array(
+                'ID' => $post_id,
+                'post_title' => $new_title,
+                'post_name' => sanitize_title($new_title)
+            ));
+        }
+        
         wp_send_json_success(array('message' => sprintf(__('Feltöltés sikeres: Ebook: %s; Borító: %s', 'ebook-sales'), $ebook_unique_name, $cover_unique_name)));
     } else {
         wp_send_json_error(array('message' => __('Fájl feltöltési hiba történt!', 'ebook-sales')));
