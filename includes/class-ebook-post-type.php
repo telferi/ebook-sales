@@ -311,16 +311,17 @@ function handle_save_ebook_file_ajax(){
         update_post_meta($post_id, '_ebook_file', esc_url_raw($ebook_file_url));
         update_post_meta($post_id, '_cover_image', esc_url_raw($cover_file_url));
         
-        // Ha a posztnak nincs címe, akkor az ebook fájl eredeti nevéből (kiterjesztés nélkül)
+        // Ha a posztnak nincs címe, vagy az "Auto Draft", akkor az ebook fájl eredeti nevéből (kiterjesztés nélkül)
         // állítjuk be a címet, ügyelve arra, hogy az első betű nagy legyen.
         $post = get_post($post_id);
-        if (empty(trim($post->post_title))) {
+        $current_title = trim($post->post_title);
+        if ( empty($current_title) || mb_strtolower($current_title, 'UTF-8') === 'auto draft' ) {
             $new_title = pathinfo($ebook_filename, PATHINFO_FILENAME);
-            // Használjuk a MB_CASE_TITLE-t, hogy támogatást kapjunk az ékezetes karakterekhez is.
+            // Az első betű nagybetűssé tétele (UTF-8 támogatással)
             $new_title = mb_convert_case($new_title, MB_CASE_TITLE, "UTF-8");
             wp_update_post(array(
-                'ID' => $post_id,
-                'post_title' => $new_title,
+                'ID'        => $post_id,
+                'post_title'=> $new_title,
                 'post_name' => sanitize_title($new_title)
             ));
         }
