@@ -40,14 +40,18 @@ require_once EBOOK_SALES_PLUGIN_DIR . 'includes/handler-dependency-setting.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-delete-trash.php';
 
 // Aktiválás/deaktiválás
-register_activation_hook(__FILE__, function() {
+register_activation_hook(__FILE__, 'ebook_sales_activate');
+function ebook_sales_activate() {
+    // Győződj meg arról, hogy az egyedi post típus regisztrálása megtörtént,
+    // például betöltöd a class-ebook-post-type.php fájlt, mely már tartalmazza a regisztrációt.
     flush_rewrite_rules();
     Payment_Database::create_table();
-});
+}
 
-register_deactivation_hook(__FILE__, function() {
+register_deactivation_hook(__FILE__, 'ebook_sales_deactivate');
+function ebook_sales_deactivate(){
     flush_rewrite_rules();
-});
+}
 
 // Fordítások
 add_action('plugins_loaded', function() {
