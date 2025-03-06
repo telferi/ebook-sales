@@ -301,8 +301,8 @@ function handle_save_ebook_file_ajax(){
     $cover_target_file = $target_dir . '/' . $cover_unique_name;
     
     // Fájlok feltöltése – csak akkor, ha mindkettő sikeres
-    if (move_uploaded_file($_FILES['ebook_file']['tmp_name'], $ebook_target_file) &&
-        move_uploaded_file($_FILES['cover_image']['tmp_name'], $cover_target_file)) {
+    if ( move_uploaded_file($_FILES['ebook_file']['tmp_name'], $ebook_target_file) &&
+         move_uploaded_file($_FILES['cover_image']['tmp_name'], $cover_target_file) ) {
         
         // Állítsuk be a fájl URL-eket
         $ebook_file_url = $upload['baseurl'] . '/protected_ebooks/' . $ebook_unique_name;
@@ -311,19 +311,19 @@ function handle_save_ebook_file_ajax(){
         update_post_meta($post_id, '_ebook_file', esc_url_raw($ebook_file_url));
         update_post_meta($post_id, '_cover_image', esc_url_raw($cover_file_url));
         
-        // Ha a posztnak nincs címe, vagy az "Auto Draft", akkor az ebook fájl eredeti nevéből (kiterjesztés nélkül)
-        // állítjuk be a címet, ügyelve arra, hogy az első betű nagy legyen.
+        // Ellenőrizzük a post címét
         $post = get_post($post_id);
         $current_title = trim($post->post_title);
-        if ( empty($current_title) || mb_strtolower($current_title, 'UTF-8') === 'auto draft' ) {
+        if ( empty($current_title) || strtolower($current_title) === 'auto draft' ) {
+            // Ebook fájl eredeti neve kiterjesztés nélkül
             $new_title = pathinfo($ebook_filename, PATHINFO_FILENAME);
-            // Az első betű nagybetűssé tétele (UTF-8 támogatással)
+            // Az első betű nagybetűssé tétele (például "hólapát" -> "Hólapát")
             $new_title = mb_convert_case($new_title, MB_CASE_TITLE, "UTF-8");
             wp_update_post(array(
                 'ID'        => $post_id,
                 'post_title'=> $new_title,
-                'post_name' => sanitize_title($new_title),
-                'post_status'=> 'draft'
+                'post_name' => sanitize_title($new_title)
+                // Ha nem szeretnéd változtatni a post_status-t, itt nem kell megadni.
             ));
         }
         
