@@ -42,8 +42,12 @@ require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-delete-trash.php';
 // Aktiválás/deaktiválás
 register_activation_hook(__FILE__, 'ebook_sales_activate');
 function ebook_sales_activate() {
-    // Győződj meg arról, hogy az egyedi post típus regisztrálása megtörtént,
-    // például betöltöd a class-ebook-post-type.php fájlt, mely már tartalmazza a regisztrációt.
+    // Betöltjük a custom post típus regisztrációját végző fájlt és példányosítjuk az osztályt.
+    require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-post-type.php';
+    $ebook_post_type = new Ebook_Post_Type();
+    // Regisztráljuk a post típust, így a rewrite szabályok helyesek lesznek.
+    $ebook_post_type->register_ebook_post_type();
+    
     flush_rewrite_rules();
     Payment_Database::create_table();
 }
