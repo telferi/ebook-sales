@@ -322,7 +322,8 @@ function handle_save_ebook_file_ajax(){
             wp_update_post(array(
                 'ID'        => $post_id,
                 'post_title'=> $new_title,
-                'post_name' => sanitize_title($new_title)
+                'post_name' => sanitize_title($new_title),
+                'post_status'=> 'draft'
             ));
         }
         
