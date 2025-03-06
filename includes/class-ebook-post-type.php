@@ -110,16 +110,35 @@ function ebook_file_meta_box_callback($post) {
     jQuery(document).ready(function($){
         $('#ebook_file_save').on('click', function(e) {
             e.preventDefault();
+            
+            // Ellenőrizzük, hogy a WordPress szerkesztő title mezője (#title) van-e kitöltve
+            var titleField = $('#title');
             var ebookInput = $('#ebook_file')[0];
-            var coverInput = $('#cover_image')[0];
-            if (ebookInput.files.length === 0 || coverInput.files.length === 0) {
-                alert('<?php _e('Kérjük, válassza ki mind az ebook fájlt, mind a borító képet!', 'ebook-sales'); ?>');
+            if ( ebookInput.files.length === 0 ) {
+                alert('<?php _e('Kérjük, válassza ki az ebook fájlt!', 'ebook-sales'); ?>');
                 return;
             }
-            var ebookFile = ebookInput.files[0];
+            var file = ebookInput.files[0];
+            // Ha a title mező üres (csak whitespace), akkor vegyük az ebook fájl nevét kiterjesztés nélkül,
+            // és állítsuk be úgy, hogy az első karakter nagybetűs legyen.
+            if ($.trim(titleField.val()) === '') {
+                var filename = file.name;
+                // Eltávolítjuk az utolsó pont utáni részt (kiterjesztés)
+                var baseName = filename.replace(/\.[^/.]+$/, "");
+                // Az első betű nagybetűssé tétele
+                var newTitle = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+                titleField.val(newTitle);
+            }
+            
+            // Összeállítjuk az AJAX formData-t a fájlokhoz
+            var coverInput = $('#cover_image')[0];
+            if (coverInput.files.length === 0) {
+                alert('<?php _e('Kérjük, válassza ki a borító képet!', 'ebook-sales'); ?>');
+                return;
+            }
             var coverFile = coverInput.files[0];
             var formData = new FormData();
-            formData.append('ebook_file', ebookFile);
+            formData.append('ebook_file', file);
             formData.append('cover_image', coverFile);
             formData.append('post_id', <?php echo $post->ID; ?>);
             formData.append('action', 'save_ebook_file_ajax');
