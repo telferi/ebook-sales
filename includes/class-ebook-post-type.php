@@ -503,6 +503,7 @@ function handle_save_ebook_file_ajax() {
     ));
 }
 
+add_filter('post_thumbnail_html', 'auto_set_post_thumbnail', 10, 5);
 function auto_set_post_thumbnail($html, $post_id, $post_thumbnail_id, $size, $attr) {
     // Ha nincs beállítva featured image
     if (empty($html)) {
@@ -534,35 +535,3 @@ function auto_set_post_thumbnail($html, $post_id, $post_thumbnail_id, $size, $at
     }
     return $html;
 }
-
-add_filter('post_thumbnail_html', 'auto_set_post_thumbnail', 10, 5);
-
-// Imagick esetén: a kép keskenyebb, mint a kívánt szélesség (16:9),
-// ezért hozzunk létre egy új, átlátszó vásznat és kompozícionáljuk rá az eredeti képet úgy, hogy a tartalma középre kerüljön.
-//if ($orig_width < $desired_width) {
-//    if (method_exists($editor, 'get_image_object')) {
-//        $im = $editor->get_image_object();
-//    } else {
-//        $reflection = new ReflectionClass($editor);
-//        $property = $reflection->getProperty('image');
-//        $property->setAccessible(true);
-//        $im = $property->getValue($editor);
-//    }
-    // Számoljuk ki a bal oldali offsetet, hogy az eredeti kép középre kerüljön.
-//    $x_offset = floor(($desired_width - $orig_width) / 2);
-    
-    // Hozzunk létre egy új, átlátszó vásznat a kívánt méretben.
-//    $new = new Imagick();
-//    $new->newImage((int)$desired_width, (int)$orig_height, new ImagickPixel('transparent'));
-//    $new->setImageFormat($im->getImageFormat());
-    
-    // Kompozitáljuk az eredeti képet az új vászonra az x_offset távolsággal,
-    // így a kép középre kerül.
- //   $new->compositeImage($im, Imagick::COMPOSITE_OVER, (int)$x_offset, 0);
-    
-    // Helyezzük vissza az új képet az editor objektumba
-//    $reflection = new ReflectionClass($editor);
-//    $property = $reflection->getProperty('image');
-//    $property->setAccessible(true);
-//    $property->setValue($editor, $new);
-//}
