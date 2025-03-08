@@ -313,6 +313,8 @@ function custom_ebook_column($column, $post_id) {
 
 add_action('wp_ajax_save_ebook_file_ajax', 'handle_save_ebook_file_ajax');
 
+require_once plugin_dir_path( __FILE__ ) . 'class-ebook-post-file.php';
+
 function handle_save_ebook_file_ajax() {
     // Ellenőrzés: nonce és post ID
     if (!isset($_POST['ebook_file_nonce']) || !wp_verify_nonce($_POST['ebook_file_nonce'], 'save_ebook_file')) {
@@ -365,104 +367,34 @@ function handle_save_ebook_file_ajax() {
     }
 
     // Ebook fájl mentése
-    $ebook_filename      = sanitize_file_name($_FILES['ebook_file']['name']);
-    $ebook_unique_name   = wp_unique_filename($protected_dir, $ebook_filename);
-    $ebook_target_file   = $protected_dir . '/' . $ebook_unique_name;
-    if (!move_uploaded_file($_FILES['ebook_file']['tmp_name'], $ebook_target_file)) {
-        wp_send_json_error(array('message' => __('Nem sikerült feltölteni az ebook fájlt!', 'ebook-sales')));
+    $ebook_upload = Ebook_Post_File::upload_file($_FILES['ebook_file'], array('pdf','epub','mobi'), array('application/pdf', 'application/epub+zip', 'application/x-mobipocket-ebook'), $protected_dir);
+
+    if (is_wp_error($ebook_upload)) {
+        wp_send_json_error(array('message' => $ebook_upload->get_error_message()));
     }
-    $file_url = $upload['baseurl'] . '/protected_ebooks/' . $ebook_unique_name;
-    update_post_meta($post_id, '_ebook_file', esc_url_raw($file_url));
+    update_post_meta($post_id, '_ebook_file', $ebook_upload['file_url']);
 
     // Borító kép mentése
-    $cover_filename    = sanitize_file_name($_FILES['cover_image']['name']);
-    $cover_file_ext    = strtolower(pathinfo($cover_filename, PATHINFO_EXTENSION));
-    $ebook_base        = pathinfo($ebook_unique_name, PATHINFO_FILENAME);
-    $cover_unique_name = $ebook_base . '.' . $cover_file_ext;
-    $cover_target_file = $covers_dir . '/' . $cover_unique_name;
-    if (!move_uploaded_file($_FILES['cover_image']['tmp_name'], $cover_target_file)) {
-        wp_send_json_error(array('message' => __('Nem sikerült feltölteni a borító képet!', 'ebook-sales')));
+    $cover_upload = Ebook_Post_File::upload_file($_FILES['cover_image'], array('jpg','jpeg','png','gif'), array('image/jpeg','image/png','image/gif'), $covers_dir);
+    if (is_wp_error($cover_upload)) {
+        wp_send_json_error(array('message' => $cover_upload->get_error_message()));
     }
 
-    // Cover kép 16:9-es átméretezése, úgy, hogy a kép teljes magassága megtartásra kerül,
-    // a kívánt szélesség a magasság alapján: $desired_width = $orig_height * (16/9)
-    $editor = wp_get_image_editor($cover_target_file);
-    if (!is_wp_error($editor)) {
-        $size = $editor->get_size();
-        $orig_width  = $size['width'];
-        $orig_height = $size['height'];
-        $desired_width = round($orig_height * (16/9));
-        
-        if ($orig_width > $desired_width) {
-            // Ha a kép túl széles: cropoljuk úgy, hogy a kép középre kerüljön
-            $src_x = round(($orig_width - $desired_width) / 2);
-            $editor->crop($src_x, 0, $desired_width, $orig_height);
-        } elseif ($orig_width < $desired_width) {
-            // Ha a kép keskenyebb: GD vagy Imagick alapján kiterjesztjük, hogy a kép tartalma középre kerüljön
-            if (method_exists($editor, 'set_canvas_size')) {
-                // GD esetén
-                $editor->set_canvas_size(
-                    $desired_width,
-                    $orig_height,
-                    'center',
-                    array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 127)
-                );
-            } else {
-                // Imagick esetén
-                if (method_exists($editor, 'get_image_object')) {
-                    $im = $editor->get_image_object();
-                } else {
-                    $reflection = new ReflectionClass($editor);
-                    $property = $reflection->getProperty('image');
-                    $property->setAccessible(true);
-                    $im = $property->getValue($editor);
-                }
-                $x_offset = floor(($desired_width - $orig_width) / 2);
-                // Az új vászonra kompozícionáljuk az eredeti képet, hogy az tartalom középre kerüljön
-                $new = new Imagick();
-                $new->newImage((int)$desired_width, (int)$orig_height, new ImagickPixel('transparent'));
-                $new->setImageFormat($im->getImageFormat());
-                $new->compositeImage($im, Imagick::COMPOSITE_OVER, (int)$x_offset, 0);
-                // Frissítjük az editor képét az új képre
-                $reflection = new ReflectionClass($editor);
-                $property = $reflection->getProperty('image');
-                $property->setAccessible(true);
-                $property->setValue($editor, $new);
-            }
-        }
-        
-        $saved = $editor->save($cover_target_file);
-        if (!is_wp_error($saved)) {
-            $cover_target_file = $saved['path'];
-            $cover_file_url = $upload['baseurl'] . '/ebook_covers/' . basename($cover_target_file);
-            update_post_meta($post_id, '_cover_image', esc_url_raw($cover_file_url));
-        }
+    // Borító kép átméretezése
+    $cover_result = Ebook_Post_File::process_cover_image($cover_upload['target_file']);
+    if (is_wp_error($cover_result)) {
+        wp_send_json_error(array('message' => $cover_result->get_error_message()));
     }
+    update_post_meta($post_id, '_cover_image', $cover_result['cover_file_url']);
 
-    // Kiemelt kép beállítása (attachment beszúrása)
-    require_once(ABSPATH . 'wp-admin/includes/file.php');
-    require_once(ABSPATH . 'wp-admin/includes/media.php');
-
-    $attachment = array(
-        'guid'           => $cover_file_url,  // A korábban feldolgozott borító kép URL-je
-        'post_mime_type' => wp_check_filetype($cover_target_file)['type'],
-        'post_title'     => sanitize_file_name($cover_unique_name),
-        'post_content'   => '',
-        'post_status'    => 'inherit'
-    );
-    $attachment_id = wp_insert_attachment($attachment, $cover_target_file, $post_id);
-    if (!is_wp_error($attachment_id)) {
-        $attach_data = wp_generate_attachment_metadata($attachment_id, $cover_target_file);
-        wp_update_attachment_metadata($attachment_id, $attach_data);
-        // Egyszer állítjuk be a featured image-t (ha még nem lett beállítva)
-        maybe_set_featured_image($post_id);
-    }
+    // Attachment létrehozása és featured image beállítása
+    $attachment_id = Ebook_Post_File::create_cover_attachment($post_id, $cover_upload['target_file'], $cover_result['cover_file_url']);
 
     wp_send_json_success(array(
         'message' => sprintf(
             __('Feltöltés sikeres: Ebook: %s; Borító: %s', 'ebook-sales'),
-            esc_html($ebook_unique_name),
-            esc_html($cover_unique_name)
+            esc_html($ebook_upload['file_url']),
+            esc_html($cover_result['cover_file_url'])
         )
     ));
 }

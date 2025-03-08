@@ -35,9 +35,10 @@ require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-stripe-webhook-handler.php
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-payment-admin.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-stripe-subscription-handler.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-dependency-settings.php'; 
-require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-role-ranking-settings.php';// Új
+require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-role-ranking-settings.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/handler-dependency-setting.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-delete-trash.php';
+require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-post-file.php'; // Új fájl
 
 // Aktiválás/deaktiválás
 register_activation_hook(__FILE__, 'ebook_sales_activate');
