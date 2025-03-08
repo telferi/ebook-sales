@@ -446,28 +446,31 @@ function handle_save_ebook_file_ajax() {
         } elseif ( $orig_width < $desired_width ) {
             // Ha a kép keskenyebb, akkor szeretnénk az eredeti képet a vásznon középre helyezni,
             // és az üres területet átlátszóvá tenni.
-            // Először próbáljuk a set_canvas_size metódust (GD esetén elérhető)
-            if ( method_exists( $editor, 'set_canvas_size' ) ) {
+            if (method_exists($editor, 'set_canvas_size')) {
                 // GD esetén használjuk a set_canvas_size metódust
-                $editor->set_canvas_size( $desired_width, $orig_height, 'center', array( 'r' => 0, 'g' => 0, 'b' => 0, 'a' => 127 ) );
+                $editor->set_canvas_size(
+                    $desired_width,
+                    $orig_height,
+                    'center',
+                    array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 127)
+                );
             } else {
                 // Imagick esetén próbáljuk meg lekérni az Imagick objektumot
-                if ( method_exists( $editor, 'get_image_object' ) ) {
+                if (method_exists($editor, 'get_image_object')) {
                     $im = $editor->get_image_object();
                 } else {
                     // Reflection segítségével hozzáférünk a védett 'image' tulajdonsághoz
-                    $reflection = new ReflectionClass( $editor );
-                    $property = $reflection->getProperty( 'image' );
-                    $property->setAccessible( true );
-                    $im = $property->getValue( $editor );
+                    $reflection = new ReflectionClass($editor);
+                    $property = $reflection->getProperty('image');
+                    $property->setAccessible(true);
+                    $im = $property->getValue($editor);
                 }
                 // Számoljuk ki a bal oldali üres terület szélességét a kép középre igazításához
-                $x_offset = round( ($desired_width - $orig_width) / 2 );
-                $im->setImageBackgroundColor( new ImagickPixel('transparent') );
+                $x_offset = round(($desired_width - $orig_width) / 2);
+                $im->setImageBackgroundColor(new ImagickPixel('transparent'));
                 // extentImage: új vászon mérete, valamint az offset értékek meghatározása
-                $im->extentImage( (int)$desired_width, (int)$orig_height, (int)$x_offset, 0 );
-                // A módosított Imagick objektum mentése vissza az editorba
-                $editor->update_image();
+                $im->extentImage((int)$desired_width, (int)$orig_height, (int)$x_offset, 0);
+                // Nincs szükség update_image() meghívására Imagick esetén.
             }
         }
         
