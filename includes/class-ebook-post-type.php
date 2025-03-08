@@ -428,7 +428,7 @@ function handle_save_ebook_file_ajax() {
         wp_send_json_error( array( 'message' => __( 'Nem sikerült feltölteni a borító képet!', 'ebook-sales' ) ) );
     }
 
-    // Új rész: A cover kép 16:9-es arányúvá alakítása úgy, hogy a kép teljes magasságát megtartjuk
+    // Új rész: A cover kép 16:9-es arányúvá alakítása úgy, hogy a kép teljes magasságát megtartjuk  
     $editor = wp_get_image_editor( $cover_target_file );
     if ( ! is_wp_error( $editor ) ) {
         $size = $editor->get_size();
@@ -440,14 +440,13 @@ function handle_save_ebook_file_ajax() {
         $desired_width = round( $orig_height * $target_ratio );
         
         if ( $orig_width > $desired_width ) {
-            // Ha a kép túl széles, középre igazított crop, így a teljes magasság megmarad.
+            // Ha a kép túl széles: középre cropoljuk
             $src_x = round( ($orig_width - $desired_width) / 2 );
             $editor->crop( $src_x, 0, $desired_width, $orig_height );
         } elseif ( $orig_width < $desired_width ) {
-            // Ha a kép keskenyebb, szeretnénk, hogy az eredeti kép középre kerüljön,
-            // és a hiányzó területet balról és jobbról átlátszó kitöltés pótolja.
+            // Ha a kép keskenyebb: kiterjesztjük a vásznat átlátszó kitöltéssel úgy, hogy a kép tartalma középre kerüljön.
             if ( method_exists($editor, 'set_canvas_size') ) {
-                // GD esetén használjuk a set_canvas_size metódust
+                // GD alapú szerkesztő esetén
                 $editor->set_canvas_size(
                     $desired_width,
                     $orig_height,
@@ -455,7 +454,7 @@ function handle_save_ebook_file_ajax() {
                     array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 127)
                 );
             } else {
-                // Imagick esetén – lekérjük az Imagick objektumot
+                // Imagick esetén – egyetlen blokkban dolgozunk:
                 if ( method_exists($editor, 'get_image_object') ) {
                     $im = $editor->get_image_object();
                 } else {
@@ -465,12 +464,12 @@ function handle_save_ebook_file_ajax() {
                     $property->setAccessible(true);
                     $im = $property->getValue($editor);
                 }
-                // Számoljuk ki a bal oldali offsetet úgy, hogy az extra terület felére kerüljön
-                $x_offset = floor(($desired_width - $orig_width) / 2);
-                // Nullázzuk az esetleges korábbi vászon-beállításokat
+                // Számoljuk ki a bal oldali offsetet úgy, hogy a plusz terület pontosan felére osztódjon
+                $x_offset = round(($desired_width - $orig_width) / 2);
+                // Nullázzuk az előző vászon-beállításokat
                 $im->setImagePage(0, 0, 0, 0);
                 $im->setImageBackgroundColor(new ImagickPixel('transparent'));
-                // Kiterjesztjük a vásznat: új szélesség = $desired_width, új magasság = $orig_height,
+                // Kiterjesztjük a vásznat: új szélesség = $desired_width, magasság = $orig_height,
                 // az eredeti kép $x_offset pixel távolsággal kerül középre
                 $im->extentImage((int)$desired_width, (int)$orig_height, (int)$x_offset, 0);
             }
@@ -484,29 +483,6 @@ function handle_save_ebook_file_ajax() {
             update_post_meta( $post_id, '_cover_image', esc_url_raw($cover_file_url) );
         }
     }
-
-    // Imagick esetén: ha a kép keskenyebb, mint a kívánt szélesség (16:9),
-    // bővítjük a vásznat átlátszó kitöltéssel úgy, hogy a kép tartalma középre kerüljön.
-    if (!method_exists($editor, 'set_canvas_size')) {
-        if (method_exists($editor, 'get_image_object')) {
-            $im = $editor->get_image_object();
-        } else {
-            // Reflection segítségével hozzáférünk a védett 'image' tulajdonsághoz
-            $reflection = new ReflectionClass($editor);
-            $property = $reflection->getProperty('image');
-            $property->setAccessible(true);
-            $im = $property->getValue($editor);
-        }
-        // Számoljuk ki a bal oldali offsetet úgy, hogy a kép középre kerüljön:
-        $x_offset = floor(($desired_width - $orig_width) / 2);
-        // Nullázzuk az előző vászon beállításokat
-        $im->setImagePage(0, 0, 0, 0);
-        $im->setImageBackgroundColor(new ImagickPixel('transparent'));
-        // Kiterjesztjük a vásznat úgy, hogy a meglévő kép $x_offset távolsággal kerül középre
-        $im->extentImage((int)$desired_width, (int)$orig_height, (int)$x_offset, 0);
-    }
-
-    update_post_meta( $post_id, '_cover_image', esc_url_raw($cover_file_url) );
 
     // Kiemelt kép beállítása (attachment beszúrása)
     require_once( ABSPATH . 'wp-admin/includes/image.php' );
