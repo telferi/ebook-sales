@@ -444,9 +444,9 @@ function handle_save_ebook_file_ajax() {
             $src_x = round( ($orig_width - $desired_width) / 2 );
             $editor->crop( $src_x, 0, $desired_width, $orig_height );
         } elseif ( $orig_width < $desired_width ) {
-            // Ha a kép keskenyebb, akkor szeretnénk az eredeti képet a vásznon középre helyezni,
-            // és az üres területet átlátszóvá tenni.
-            if (method_exists($editor, 'set_canvas_size')) {
+            // Ha a kép keskenyebb, szeretnénk, hogy az eredeti kép középre kerüljön,
+            // és a hiányzó területet balról és jobbról átlátszó kitöltés pótolja.
+            if ( method_exists($editor, 'set_canvas_size') ) {
                 // GD esetén használjuk a set_canvas_size metódust
                 $editor->set_canvas_size(
                     $desired_width,
@@ -455,8 +455,8 @@ function handle_save_ebook_file_ajax() {
                     array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 127)
                 );
             } else {
-                // Imagick esetén próbáljuk meg lekérni az Imagick objektumot
-                if (method_exists($editor, 'get_image_object')) {
+                // Imagick esetén – lekérjük az Imagick objektumot
+                if ( method_exists($editor, 'get_image_object') ) {
                     $im = $editor->get_image_object();
                 } else {
                     // Reflection segítségével hozzáférünk a védett 'image' tulajdonsághoz
@@ -465,12 +465,14 @@ function handle_save_ebook_file_ajax() {
                     $property->setAccessible(true);
                     $im = $property->getValue($editor);
                 }
-                // Számoljuk ki a bal oldali üres terület szélességét a kép középre igazításához
-                $x_offset = round(($desired_width - $orig_width) / 2);
+                // Számoljuk ki a bal oldali offsetet úgy, hogy az extra terület felére kerüljön
+                $x_offset = floor(($desired_width - $orig_width) / 2);
+                // Nullázzuk az esetleges korábbi vászon-beállításokat
+                $im->setImagePage(0, 0, 0, 0);
                 $im->setImageBackgroundColor(new ImagickPixel('transparent'));
-                // extentImage: új vászon mérete, valamint az offset értékek meghatározása
+                // Kiterjesztjük a vásznat: új szélesség = $desired_width, új magasság = $orig_height,
+                // az eredeti kép $x_offset pixel távolsággal kerül középre
                 $im->extentImage((int)$desired_width, (int)$orig_height, (int)$x_offset, 0);
-                // Nincs szükség update_image() meghívására Imagick esetén.
             }
         }
         
@@ -496,14 +498,12 @@ function handle_save_ebook_file_ajax() {
             $im = $property->getValue($editor);
         }
         // Számoljuk ki a bal oldali offsetet úgy, hogy a kép középre kerüljön:
-        $x_offset = round(($desired_width - $orig_width) / 2);
-        // Nullázzuk az előző vászonbeállításokat
+        $x_offset = floor(($desired_width - $orig_width) / 2);
+        // Nullázzuk az előző vászon beállításokat
         $im->setImagePage(0, 0, 0, 0);
         $im->setImageBackgroundColor(new ImagickPixel('transparent'));
-        // A vászon kiterjesztése: új szélesség = $desired_width, új magasság = $orig_height,
-        // az eredeti kép a vásznon $x_offset pixellel beljebb kerül, így bal és jobb oldal egyenlő paddingot kap.
+        // Kiterjesztjük a vásznat úgy, hogy a meglévő kép $x_offset távolsággal kerül középre
         $im->extentImage((int)$desired_width, (int)$orig_height, (int)$x_offset, 0);
-        // Nincs szükség további update_image() hívására Imagick esetén.
     }
 
     update_post_meta( $post_id, '_cover_image', esc_url_raw($cover_file_url) );
