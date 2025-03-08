@@ -39,6 +39,11 @@ class Ebook_Delete_Trash {
             if ( file_exists( $file_path ) ) {
                 unlink( $file_path );
             }
+            // Töröljük az attachmentet is, ha létezik
+            $attachment_id = attachment_url_to_postid( $file_url );
+            if ( $attachment_id ) {
+                wp_delete_attachment( $attachment_id, true );
+            }
         }
     }
 }
