@@ -451,11 +451,19 @@ function handle_save_ebook_file_ajax() {
                 $editor->set_canvas_size( $desired_width, $orig_height, 'center', array( 'r' => 0, 'g' => 0, 'b' => 0, 'a' => 127 ) );
             } else {
                 // Imagick esetén: hozzáférünk az alap Imagick objektumhoz, és kiegészítjük a vásznat
-                $im = $editor->get_image();
-                // Számoljuk ki a bal oldali üres terület szélességét: a kép középre igazítása érdekében
-                $x_offset = round(($desired_width - $orig_width) / 2);
-                $im->setImageBackgroundColor(new ImagickPixel('transparent'));
-                // extentImage: új vászon mérete, és az offset értékek meghatározása
+                if ( method_exists( $editor, 'get_image_object' ) ) {
+                    $im = $editor->get_image_object();
+                } else {
+                    // Reflection segítségével hozzáférünk a védett 'image' tulajdonsághoz
+                    $reflection = new ReflectionClass( $editor );
+                    $property = $reflection->getProperty( 'image' );
+                    $property->setAccessible( true );
+                    $im = $property->getValue( $editor );
+                }
+                // Számoljuk ki a bal oldali üres terület szélességét a kép középre igazításához
+                $x_offset = round( ($desired_width - $orig_width) / 2 );
+                $im->setImageBackgroundColor( new ImagickPixel('transparent') );
+                // extentImage: új vászon mérete, valamint az offset értékek meghatározása
                 $im->extentImage( (int)$desired_width, (int)$orig_height, (int)$x_offset, 0 );
                 // A módosított Imagick objektum mentése vissza az editorba
                 $editor->update_image();
