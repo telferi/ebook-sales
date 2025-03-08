@@ -181,7 +181,7 @@ function ebook_file_meta_box_callback($post) {
     <!-- Új mezők: Ebook ára és devizanem -->
     <p>
         <label for="ebook_price"><?php _e('Ebook ára:', 'ebook-sales'); ?></label><br>
-        <input type="number" step="0.01" id="ebook_price" name="ebook_price" value="<?php echo esc_attr($ebook_price); ?>" required />
+        <input type="number" min="0" step="0.01" id="ebook_price" name="ebook_price" value="<?php echo esc_attr($ebook_price); ?>" required />
     </p>
     <p>
         <label for="ebook_currency"><?php _e('Devizanem:', 'ebook-sales'); ?></label><br>
@@ -227,9 +227,9 @@ function save_ebook_file_meta_box($post_id) {
     // Ebook ár és devizanem mentése
     if (isset($_POST['ebook_price'])) {
         $price_input = sanitize_text_field($_POST['ebook_price']);
-        // Ha üres string vagy 0, akkor Free legyen az érték
         if ( $price_input === '' || floatval($price_input) === 0 ) {
-            update_post_meta($post_id, '_ebook_price', 'Free');
+            // Ha üres vagy 0, akkor mentsük 0-ként (adatbázisban 0)
+            update_post_meta($post_id, '_ebook_price', 0);
         } elseif ( floatval($price_input) < 0 ) {
             // Negatív érték esetén hiba: ne engedje menteni
             set_transient("ebook_file_error_$post_id", __('Az ebook ára nem lehet negatív érték!', 'ebook-sales'), 45);
@@ -339,7 +339,8 @@ function custom_ebook_column($column, $post_id) {
         }
     } elseif ($column == 'ebook_price') {
         $price = get_post_meta($post_id, '_ebook_price', true);
-        echo $price ? esc_html($price) : __('Nincs megadva', 'ebook-sales');
+        // Ha a mentett érték 0, akkor "Free" jelenjen meg
+        echo ($price === '0' || $price === 0) ? __('Free', 'ebook-sales') : esc_html($price);
     } elseif ($column == 'ebook_currency') {
         $currency = get_post_meta($post_id, '_ebook_currency', true);
         echo $currency ? esc_html($currency) : __('Nincs megadva', 'ebook-sales');
