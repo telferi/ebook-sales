@@ -354,14 +354,12 @@ function handle_save_ebook_file_ajax() {
     if (!isset($_POST['ebook_file_nonce']) || !wp_verify_nonce($_POST['ebook_file_nonce'], 'save_ebook_file')) {
         wp_send_json_error(array('message' => __('Érvénytelen nonce!', 'ebook-sales')));
     }
-
     if (!isset($_POST['post_id'])) {
         wp_send_json_error(array('message' => __('Hiányzó post ID!', 'ebook-sales')));
     }
-
     $post_id = intval($_POST['post_id']);
 
-    // Ellenőrizzük, hogy mindkét fájl ki van-e választva, és valóban egy feltöltött fájl
+    // Ellenőrizzük, hogy mindkét fájl megfelelően ki van-e választva
     if (
         !isset($_FILES['ebook_file']) || $_FILES['ebook_file']['error'] !== UPLOAD_ERR_OK ||
         !isset($_FILES['cover_image']) || $_FILES['cover_image']['error'] !== UPLOAD_ERR_OK
@@ -379,7 +377,6 @@ function handle_save_ebook_file_ajax() {
     $ebook_filename = sanitize_file_name($_FILES['ebook_file']['name']);
     $ebook_file_ext = strtolower(pathinfo($ebook_filename, PATHINFO_EXTENSION));
     $ebook_mime     = mime_content_type($_FILES['ebook_file']['tmp_name']);
-
     if (!in_array($ebook_file_ext, $ebook_allowed_exts) || !in_array($ebook_mime, $ebook_allowed_mimes)) {
         wp_send_json_error(array('message' => __('Kérjük, töltsön fel érvényes ebook fájlt (PDF, EPUB, MOBI)!', 'ebook-sales')));
     }
@@ -388,7 +385,6 @@ function handle_save_ebook_file_ajax() {
     $cover_filename = sanitize_file_name($_FILES['cover_image']['name']);
     $cover_file_ext = strtolower(pathinfo($cover_filename, PATHINFO_EXTENSION));
     $cover_mime     = mime_content_type($_FILES['cover_image']['tmp_name']);
-
     if (!in_array($cover_file_ext, $cover_allowed_exts) || !in_array($cover_mime, $cover_allowed_mimes)) {
         wp_send_json_error(array('message' => __('Kérjük, töltsön fel érvényes borító képfájlt (JPG, JPEG, PNG, GIF)!', 'ebook-sales')));
     }
@@ -397,56 +393,50 @@ function handle_save_ebook_file_ajax() {
     $upload = wp_upload_dir();
     $protected_dir  = $upload['basedir'] . '/protected_ebooks';
     $covers_dir     = $upload['basedir'] . '/ebook_covers';
-
-    if ( ! file_exists( $protected_dir ) && ! wp_mkdir_p( $protected_dir ) ) {
-        wp_send_json_error( array( 'message' => __( 'Nem sikerült létrehozni a protected_ebooks mappát.', 'ebook-sales' ) ) );
+    if (!file_exists($protected_dir) && !wp_mkdir_p($protected_dir)) {
+        wp_send_json_error(array('message' => __('Nem sikerült létrehozni a protected_ebooks mappát.', 'ebook-sales')));
     }
-
-    if ( ! file_exists( $covers_dir ) && ! wp_mkdir_p( $covers_dir ) ) {
-        wp_send_json_error( array( 'message' => __( 'Nem sikerült létrehozni az ebook_covers mappát.', 'ebook-sales' ) ) );
+    if (!file_exists($covers_dir) && !wp_mkdir_p($covers_dir)) {
+        wp_send_json_error(array('message' => __('Nem sikerült létrehozni az ebook_covers mappát.', 'ebook-sales')));
     }
 
     // Ebook fájl mentése
-    $ebook_filename  = sanitize_file_name( $_FILES['ebook_file']['name'] );
-    $ebook_unique_name  = wp_unique_filename( $protected_dir, $ebook_filename );
-    $ebook_target_file  = $protected_dir . '/' . $ebook_unique_name;
-
-    if ( ! move_uploaded_file( $_FILES['ebook_file']['tmp_name'], $ebook_target_file ) ) {
-        wp_send_json_error( array( 'message' => __( 'Nem sikerült feltölteni az ebook fájlt!', 'ebook-sales' ) ) );
+    $ebook_filename      = sanitize_file_name($_FILES['ebook_file']['name']);
+    $ebook_unique_name   = wp_unique_filename($protected_dir, $ebook_filename);
+    $ebook_target_file   = $protected_dir . '/' . $ebook_unique_name;
+    if (!move_uploaded_file($_FILES['ebook_file']['tmp_name'], $ebook_target_file)) {
+        wp_send_json_error(array('message' => __('Nem sikerült feltölteni az ebook fájlt!', 'ebook-sales')));
     }
     $file_url = $upload['baseurl'] . '/protected_ebooks/' . $ebook_unique_name;
-    update_post_meta( $post_id, '_ebook_file', esc_url_raw( $file_url ) );
+    update_post_meta($post_id, '_ebook_file', esc_url_raw($file_url));
 
     // Borító kép mentése
-    $cover_filename    = sanitize_file_name( $_FILES['cover_image']['name'] );
-    $cover_file_ext    = strtolower( pathinfo( $cover_filename, PATHINFO_EXTENSION ) );
-    $ebook_base        = pathinfo( $ebook_unique_name, PATHINFO_FILENAME );
+    $cover_filename    = sanitize_file_name($_FILES['cover_image']['name']);
+    $cover_file_ext    = strtolower(pathinfo($cover_filename, PATHINFO_EXTENSION));
+    $ebook_base        = pathinfo($ebook_unique_name, PATHINFO_FILENAME);
     $cover_unique_name = $ebook_base . '.' . $cover_file_ext;
     $cover_target_file = $covers_dir . '/' . $cover_unique_name;
-
-    if ( ! move_uploaded_file( $_FILES['cover_image']['tmp_name'], $cover_target_file ) ) {
-        wp_send_json_error( array( 'message' => __( 'Nem sikerült feltölteni a borító képet!', 'ebook-sales' ) ) );
+    if (!move_uploaded_file($_FILES['cover_image']['tmp_name'], $cover_target_file)) {
+        wp_send_json_error(array('message' => __('Nem sikerült feltölteni a borító képet!', 'ebook-sales')));
     }
 
-    // Új rész: A cover kép 16:9-es arányúvá alakítása úgy, hogy a kép teljes magasságát megtartjuk  
-    $editor = wp_get_image_editor( $cover_target_file );
-    if ( ! is_wp_error( $editor ) ) {
+    // Cover kép 16:9-es átméretezése, úgy, hogy a kép teljes magassága megtartásra kerül,
+    // a kívánt szélesség a magasság alapján: $desired_width = $orig_height * (16/9)
+    $editor = wp_get_image_editor($cover_target_file);
+    if (!is_wp_error($editor)) {
         $size = $editor->get_size();
         $orig_width  = $size['width'];
         $orig_height = $size['height'];
-        $target_ratio = 16 / 9;
+        $desired_width = round($orig_height * (16/9));
         
-        // A kívánt végeredmény szélessége a magasság alapján
-        $desired_width = round( $orig_height * $target_ratio );
-        
-        if ( $orig_width > $desired_width ) {
-            // Ha a kép túl széles: középre cropoljuk
-            $src_x = round( ($orig_width - $desired_width) / 2 );
-            $editor->crop( $src_x, 0, $desired_width, $orig_height );
-        } elseif ( $orig_width < $desired_width ) {
-            // Ha a kép keskenyebb: kiterjesztjük a vásznat átlátszó kitöltéssel úgy, hogy a kép tartalma középre kerüljön.
-            if ( method_exists($editor, 'set_canvas_size') ) {
-                // GD alapú szerkesztő esetén
+        if ($orig_width > $desired_width) {
+            // Ha a kép túl széles: cropoljuk úgy, hogy a kép középre kerüljön
+            $src_x = round(($orig_width - $desired_width) / 2);
+            $editor->crop($src_x, 0, $desired_width, $orig_height);
+        } elseif ($orig_width < $desired_width) {
+            // Ha a kép keskenyebb: GD vagy Imagick alapján kiterjesztjük, hogy a kép tartalma középre kerüljön
+            if (method_exists($editor, 'set_canvas_size')) {
+                // GD esetén
                 $editor->set_canvas_size(
                     $desired_width,
                     $orig_height,
@@ -454,86 +444,63 @@ function handle_save_ebook_file_ajax() {
                     array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 127)
                 );
             } else {
-                // Imagick esetén – egyetlen blokkban dolgozunk:
-                if ( method_exists($editor, 'get_image_object') ) {
+                // Imagick esetén
+                if (method_exists($editor, 'get_image_object')) {
                     $im = $editor->get_image_object();
                 } else {
-                    // Reflection segítségével hozzáférünk a védett 'image' tulajdonsághoz
                     $reflection = new ReflectionClass($editor);
                     $property = $reflection->getProperty('image');
                     $property->setAccessible(true);
                     $im = $property->getValue($editor);
                 }
-                // Számoljuk ki a bal oldali offsetet úgy, hogy a plusz terület pontosan felére osztódjon
-                $x_offset = round(($desired_width - $orig_width) / 2);
-                // Nullázzuk az előző vászon-beállításokat
-                $im->setImagePage(0, 0, 0, 0);
-                $im->setImageBackgroundColor(new ImagickPixel('transparent'));
-                // Kiterjesztjük a vásznat: új szélesség = $desired_width, magasság = $orig_height,
-                // az eredeti kép $x_offset pixel távolsággal kerül középre
-                $im->extentImage((int)$desired_width, (int)$orig_height, (int)$x_offset, 0);
+                $x_offset = floor(($desired_width - $orig_width) / 2);
+                // Az új vászonra kompozícionáljuk az eredeti képet, hogy az tartalom középre kerüljön
+                $new = new Imagick();
+                $new->newImage((int)$desired_width, (int)$orig_height, new ImagickPixel('transparent'));
+                $new->setImageFormat($im->getImageFormat());
+                $new->compositeImage($im, Imagick::COMPOSITE_OVER, (int)$x_offset, 0);
+                // Frissítjük az editor képét az új képre
+                $reflection = new ReflectionClass($editor);
+                $property = $reflection->getProperty('image');
+                $property->setAccessible(true);
+                $property->setValue($editor, $new);
             }
         }
         
-        $saved = $editor->save( $cover_target_file );
-        if ( ! is_wp_error( $saved ) ) {
-            // Frissítjük a cover kép elérési útját
+        $saved = $editor->save($cover_target_file);
+        if (!is_wp_error($saved)) {
             $cover_target_file = $saved['path'];
-            $cover_file_url = $upload['baseurl'] . '/ebook_covers/' . basename( $cover_target_file );
-            update_post_meta( $post_id, '_cover_image', esc_url_raw($cover_file_url) );
+            $cover_file_url = $upload['baseurl'] . '/ebook_covers/' . basename($cover_target_file);
+            update_post_meta($post_id, '_cover_image', esc_url_raw($cover_file_url));
         }
     }
 
     // Kiemelt kép beállítása (attachment beszúrása)
-    require_once( ABSPATH . 'wp-admin/includes/image.php' );
-    require_once( ABSPATH . 'wp-admin/includes/file.php' );
-    require_once( ABSPATH . 'wp-admin/includes/media.php' );
+    require_once(ABSPATH . 'wp-admin/includes/image.php');
+    require_once(ABSPATH . 'wp-admin/includes/file.php');
+    require_once(ABSPATH . 'wp-admin/includes/media.php');
 
     $attachment = array(
         'guid'           => $cover_file_url,
-        'post_mime_type' => wp_check_filetype( $cover_target_file )['type'],
-        'post_title'     => sanitize_file_name( $cover_unique_name ),
+        'post_mime_type' => wp_check_filetype($cover_target_file)['type'],
+        'post_title'     => sanitize_file_name($cover_unique_name),
         'post_content'   => '',
         'post_status'    => 'inherit'
     );
-
-    $attachment_id = wp_insert_attachment( $attachment, $cover_target_file, $post_id );
-    if ( ! is_wp_error( $attachment_id ) ) {
-        $attach_data = wp_generate_attachment_metadata( $attachment_id, $cover_target_file );
-        wp_update_attachment_metadata( $attachment_id, $attach_data );
-        set_post_thumbnail( $post_id, $attachment_id );
+    $attachment_id = wp_insert_attachment($attachment, $cover_target_file, $post_id);
+    if (!is_wp_error($attachment_id)) {
+        $attach_data = wp_generate_attachment_metadata($attachment_id, $cover_target_file);
+        wp_update_attachment_metadata($attachment_id, $attach_data);
+        set_post_thumbnail($post_id, $attachment_id);
     }
 
-    wp_send_json_success( array(
+    wp_send_json_success(array(
         'message' => sprintf(
-            __( 'Feltöltés sikeres: Ebook: %s; Borító: %s', 'ebook-sales' ),
-            esc_html( $ebook_unique_name ),
-            esc_html( $cover_unique_name )
+            __('Feltöltés sikeres: Ebook: %s; Borító: %s', 'ebook-sales'),
+            esc_html($ebook_unique_name),
+            esc_html($cover_unique_name)
         )
-    ) );
-}
-
-// Feltételezzük, hogy $orig_width, $orig_height és $desired_width már megfelelően beállításra kerültek
-if ($orig_width < $desired_width) {
-    // Imagick esetén: kiterjesztjük a vásznat átlátszó kitöltéssel
-    if (!method_exists($editor, 'set_canvas_size')) {
-        // Szerezzük meg az Imagick objektumot
-        if (method_exists($editor, 'get_image_object')) {
-            $im = $editor->get_image_object();
-        } else {
-            $reflection = new ReflectionClass($editor);
-            $property = $reflection->getProperty('image');
-            $property->setAccessible(true);
-            $im = $property->getValue($editor);
-        }
-        // Számoljuk ki az extra szélességet és ennek felét, így a kép középre kerül
-        $x_offset = floor(($desired_width - $orig_width) / 2);
-        // Nullázzuk az előző vászon beállításokat
-        $im->setImagePage(0, 0, 0, 0);
-        $im->setImageBackgroundColor(new ImagickPixel('transparent'));
-        // Kiterjesztjük a vásznat úgy, hogy a meglévő kép $x_offset távolsággal kerül középre
-        $im->extentImage((int)$desired_width, (int)$orig_height, (int)$x_offset, 0);
-    }
+    ));
 }
 
 function auto_set_post_thumbnail($html, $post_id, $post_thumbnail_id, $size, $attr) {
@@ -569,3 +536,33 @@ function auto_set_post_thumbnail($html, $post_id, $post_thumbnail_id, $size, $at
 }
 
 add_filter('post_thumbnail_html', 'auto_set_post_thumbnail', 10, 5);
+
+// Imagick esetén: a kép keskenyebb, mint a kívánt szélesség (16:9),
+// ezért hozzunk létre egy új, átlátszó vásznat és kompozícionáljuk rá az eredeti képet úgy, hogy a tartalma középre kerüljön.
+if ($orig_width < $desired_width) {
+    if (method_exists($editor, 'get_image_object')) {
+        $im = $editor->get_image_object();
+    } else {
+        $reflection = new ReflectionClass($editor);
+        $property = $reflection->getProperty('image');
+        $property->setAccessible(true);
+        $im = $property->getValue($editor);
+    }
+    // Számoljuk ki a bal oldali offsetet, hogy az eredeti kép középre kerüljön.
+    $x_offset = floor(($desired_width - $orig_width) / 2);
+    
+    // Hozzunk létre egy új, átlátszó vásznat a kívánt méretben.
+    $new = new Imagick();
+    $new->newImage((int)$desired_width, (int)$orig_height, new ImagickPixel('transparent'));
+    $new->setImageFormat($im->getImageFormat());
+    
+    // Kompozitáljuk az eredeti képet az új vászonra az x_offset távolsággal,
+    // így a kép középre kerül.
+    $new->compositeImage($im, Imagick::COMPOSITE_OVER, (int)$x_offset, 0);
+    
+    // Helyezzük vissza az új képet az editor objektumba
+    $reflection = new ReflectionClass($editor);
+    $property = $reflection->getProperty('image');
+    $property->setAccessible(true);
+    $property->setValue($editor, $new);
+}
