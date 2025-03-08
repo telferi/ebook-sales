@@ -7,8 +7,6 @@ class Ebook_Post_Type {
 
     public function __construct() {
         add_action('init', array($this, 'register_ebook_post_type'));
-        // Duplikáció elkerülése végett eltávolítottuk a külön save_post hookot
-        // add_action('save_post', array($this, 'set_featured_image_if_not_set'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
     }
 
