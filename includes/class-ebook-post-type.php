@@ -476,12 +476,11 @@ function handle_save_ebook_file_ajax() {
     }
 
     // Kiemelt kép beállítása (attachment beszúrása)
-    require_once(ABSPATH . 'wp-admin/includes/image.php');
     require_once(ABSPATH . 'wp-admin/includes/file.php');
     require_once(ABSPATH . 'wp-admin/includes/media.php');
 
     $attachment = array(
-        'guid'           => $cover_file_url,
+        'guid'           => $cover_file_url,  // A korábban feldolgozott borító kép URL-je
         'post_mime_type' => wp_check_filetype($cover_target_file)['type'],
         'post_title'     => sanitize_file_name($cover_unique_name),
         'post_content'   => '',
@@ -491,7 +490,7 @@ function handle_save_ebook_file_ajax() {
     if (!is_wp_error($attachment_id)) {
         $attach_data = wp_generate_attachment_metadata($attachment_id, $cover_target_file);
         wp_update_attachment_metadata($attachment_id, $attach_data);
-        // Ezzel egyszer állítjuk be a featured image-t, ha még nem lett beállítva.
+        // Egyszer állítjuk be a featured image-t (ha még nem lett beállítva)
         maybe_set_featured_image($post_id);
     }
 
