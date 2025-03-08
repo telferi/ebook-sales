@@ -537,6 +537,29 @@ function handle_save_ebook_file_ajax() {
     ) );
 }
 
+// Feltételezzük, hogy $orig_width, $orig_height és $desired_width már megfelelően beállításra kerültek
+if ($orig_width < $desired_width) {
+    // Imagick esetén: kiterjesztjük a vásznat átlátszó kitöltéssel
+    if (!method_exists($editor, 'set_canvas_size')) {
+        // Szerezzük meg az Imagick objektumot
+        if (method_exists($editor, 'get_image_object')) {
+            $im = $editor->get_image_object();
+        } else {
+            $reflection = new ReflectionClass($editor);
+            $property = $reflection->getProperty('image');
+            $property->setAccessible(true);
+            $im = $property->getValue($editor);
+        }
+        // Számoljuk ki az extra szélességet és ennek felét, így a kép középre kerül
+        $x_offset = floor(($desired_width - $orig_width) / 2);
+        // Nullázzuk az előző vászon beállításokat
+        $im->setImagePage(0, 0, 0, 0);
+        $im->setImageBackgroundColor(new ImagickPixel('transparent'));
+        // Kiterjesztjük a vásznat úgy, hogy a meglévő kép $x_offset távolsággal kerül középre
+        $im->extentImage((int)$desired_width, (int)$orig_height, (int)$x_offset, 0);
+    }
+}
+
 function auto_set_post_thumbnail($html, $post_id, $post_thumbnail_id, $size, $attr) {
     // Ha nincs beállítva featured image
     if (empty($html)) {
