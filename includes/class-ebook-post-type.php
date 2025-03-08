@@ -7,8 +7,8 @@ class Ebook_Post_Type {
 
     public function __construct() {
         add_action('init', array($this, 'register_ebook_post_type'));
-        add_action('save_post', array($this, 'set_featured_image_if_not_set'));
-        // Enqueue admin scripts via a hook
+        // Duplikáció elkerülése végett eltávolítottuk a külön save_post hookot
+        // add_action('save_post', array($this, 'set_featured_image_if_not_set'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
     }
 
@@ -62,40 +62,6 @@ class Ebook_Post_Type {
             'capability_type'       => 'post',
         );
         register_post_type('ebook', $args);
-    }
-        public function set_featured_image_if_not_set($post_id) {
-        // Ellenőrizzük, hogy az aktuális bejegyzés egy 'ebook' típusú poszt-e
-        if (get_post_type($post_id) !== 'ebook') {
-            return;
-        }
-
-        // Ha már van beállított kiemelt kép, akkor nem csinálunk semmit
-        if (has_post_thumbnail($post_id)) {
-            return;
-        }
-
-        // Lekérjük a borító kép URL-jét az egyedi mezőből
-        $cover = get_post_meta($post_id, '_cover_image', true);
-        if (!$cover) {
-            return; // Ha nincs borító kép, kilépünk
-        }
-
-        // Megpróbáljuk lekérni az attachment ID-t a borító kép URL alapján
-        $attachment_id = attachment_url_to_postid($cover);
-
-        // Ha az attachment ID nem található, próbáljuk meg manuálisan keresni az adatbázisból
-        if (!$attachment_id) {
-            global $wpdb;
-            $attachment_id = $wpdb->get_var($wpdb->prepare(
-                "SELECT ID FROM $wpdb->posts WHERE guid = %s AND post_type = 'attachment'",
-                esc_url($cover)
-            ));
-        }
-
-        // Ha sikerült megtalálni az attachment ID-t, beállítjuk a kiemelt képet
-        if ($attachment_id) {
-            set_post_thumbnail($post_id, $attachment_id);
-        }
     }
 
     // Enqueue-oljuk a pluginhoz tartozó admin JS fájlt
