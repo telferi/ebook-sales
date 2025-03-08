@@ -505,23 +505,29 @@ function handle_save_ebook_file_ajax() {
 
 add_filter('post_thumbnail_html', 'auto_set_post_thumbnail', 10, 5);
 function auto_set_post_thumbnail($html, $post_id, $post_thumbnail_id, $size, $attr) {
-    // Ha nincs beállítva featured image
-    if (empty($html)) {
+    // Ha autosave vagy AJAX save van folyamatban, nem módosítjuk a featured image-t
+    if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+        return $html;
+    }
+
+    if ( empty($html) ) {
         $cover = get_post_meta($post_id, '_cover_image', true);
         if ($cover) {
-            // Először próbáljuk az attachment_url_to_postid() függvényt
+            // Próbáljuk meg lekérni az attachment ID-t
             $attachment_id = attachment_url_to_postid($cover);
             
-            // Ha az attachment_url_to_postid() nem találja meg, próbáljuk manuálisan az adatbázisból
+            // Ha nem találjuk, keressük manuálisan az adatbázisból
             if (!$attachment_id) {
                 global $wpdb;
-                $attachment_id = $wpdb->get_var($wpdb->prepare(
-                    "SELECT ID FROM $wpdb->posts WHERE guid = %s AND post_type = 'attachment'", 
-                    esc_url($cover)
-                ));
+                $attachment_id = $wpdb->get_var(
+                    $wpdb->prepare(
+                        "SELECT ID FROM $wpdb->posts WHERE guid = %s AND post_type = 'attachment'", 
+                        esc_url($cover)
+                    )
+                );
             }
-
-            // Ha sikerült találni egy attachment ID-t, beállítjuk a featured image-t
+            
+            // Ha megtaláltuk, állítsuk be a featured image-t
             if ($attachment_id) {
                 set_post_thumbnail($post_id, $attachment_id);
                 $html = get_the_post_thumbnail($post_id, $size, $attr);
