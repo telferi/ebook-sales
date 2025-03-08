@@ -491,7 +491,8 @@ function handle_save_ebook_file_ajax() {
     if (!is_wp_error($attachment_id)) {
         $attach_data = wp_generate_attachment_metadata($attachment_id, $cover_target_file);
         wp_update_attachment_metadata($attachment_id, $attach_data);
-        set_post_thumbnail($post_id, $attachment_id);
+        // Hívjuk meg a segédfüggvényt, így a featured image csak egyszer kerül beállításra
+        maybe_set_featured_image($post_id);
     }
 
     wp_send_json_success(array(
@@ -504,40 +505,44 @@ function handle_save_ebook_file_ajax() {
 }
 
 add_filter('post_thumbnail_html', 'auto_set_post_thumbnail', 10, 5);
-function auto_set_post_thumbnail($html, $post_id, $post_thumbnail_id, $size, $attr) {
-    // Ha autosave vagy AJAX save van folyamatban, nem módosítjuk a featured image-t
+function auto_set_post_thumbnail( $html, $post_id, $post_thumbnail_id, $size, $attr ) {
+    // DOING_AUTOSAVE ellenőrzés: ha autosave (vagy AJAX mentés) folyamatban van, nem módosítjuk
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
         return $html;
     }
 
-    if ( empty($html) ) {
-        $cover = get_post_meta($post_id, '_cover_image', true);
-        if ($cover) {
-            // Próbáljuk meg lekérni az attachment ID-t
-            $attachment_id = attachment_url_to_postid($cover);
-            
-            // Ha nem találjuk, keressük manuálisan az adatbázisból
-            if (!$attachment_id) {
-                global $wpdb;
-                $attachment_id = $wpdb->get_var(
-                    $wpdb->prepare(
-                        "SELECT ID FROM $wpdb->posts WHERE guid = %s AND post_type = 'attachment'", 
-                        esc_url($cover)
-                    )
-                );
-            }
-            
-            // Ha megtaláltuk, állítsuk be a featured image-t
-            if ($attachment_id) {
-                set_post_thumbnail($post_id, $attachment_id);
-                $html = get_the_post_thumbnail($post_id, $size, $attr);
-            }
-        }
-
-        // Ha még mindig üres, használjunk alapértelmezett képet
-        if (empty($html)) {
-            $html = '<img src="' . plugin_dir_url(__FILE__) . '../assets/images/default-thumbnail.jpg" alt="Alapértelmezett kép">';
+    // Ha még nincs beállítva a featured image, akkor megpróbáljuk beállítani
+    if ( ! has_post_thumbnail( $post_id ) ) {
+        maybe_set_featured_image( $post_id );
+        $html = get_the_post_thumbnail( $post_id, $size, $attr );
+        // Ha akár így sem sikerült, használjunk alapértelmezett képet
+        if ( empty( $html ) ) {
+            $html = '<img src="' . plugin_dir_url( __FILE__ ) . '../assets/images/default-thumbnail.jpg" alt="Alapértelmezett kép">';
         }
     }
     return $html;
+}
+
+/**
+ * Segédfüggvény, amely beállítja a featured image-t, ha még nincs.
+ */
+function maybe_set_featured_image( $post_id ) {
+    if ( has_post_thumbnail( $post_id ) ) {
+        return;
+    }
+    $cover = get_post_meta( $post_id, '_cover_image', true );
+    if ( ! $cover ) {
+        return;
+    }
+    $attachment_id = attachment_url_to_postid( $cover );
+    if ( ! $attachment_id ) {
+        global $wpdb;
+        $attachment_id = $wpdb->get_var( $wpdb->prepare(
+            "SELECT ID FROM $wpdb->posts WHERE guid = %s AND post_type = 'attachment'",
+            esc_url($cover)
+        ));
+    }
+    if ( $attachment_id ) {
+        set_post_thumbnail( $post_id, $attachment_id );
+    }
 }
