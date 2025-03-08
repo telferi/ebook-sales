@@ -483,7 +483,8 @@ function handle_save_ebook_file_ajax() {
         }
     }
 
-    // Imagick esetén: a kép keskenyebb, mint a kívánt szélesség (16:9), ezért adunk hozzá átlátszó kitöltést
+    // Imagick esetén: ha a kép keskenyebb, mint a kívánt szélesség (16:9),
+    // bővítjük a vásznat átlátszó kitöltéssel úgy, hogy a kép tartalma középre kerüljön.
     if (!method_exists($editor, 'set_canvas_size')) {
         if (method_exists($editor, 'get_image_object')) {
             $im = $editor->get_image_object();
@@ -494,14 +495,15 @@ function handle_save_ebook_file_ajax() {
             $property->setAccessible(true);
             $im = $property->getValue($editor);
         }
-        // Számítsuk ki a bal és jobb oldali kitöltés pontos szélességét
-        $x_offset = floor(($desired_width - $orig_width) / 2);
-        // Tisztítsuk az előző vászonszabályokat, hogy az extentImage ne torzítson
+        // Számoljuk ki a bal oldali offsetet úgy, hogy a kép középre kerüljön:
+        $x_offset = round(($desired_width - $orig_width) / 2);
+        // Nullázzuk az előző vászonbeállításokat
         $im->setImagePage(0, 0, 0, 0);
         $im->setImageBackgroundColor(new ImagickPixel('transparent'));
-        // Az extentImage metódus kiterjeszti a vásznat: (új szélesség, új magasság, x_offset, y_offset)
+        // A vászon kiterjesztése: új szélesség = $desired_width, új magasság = $orig_height,
+        // az eredeti kép a vásznon $x_offset pixellel beljebb kerül, így bal és jobb oldal egyenlő paddingot kap.
         $im->extentImage((int)$desired_width, (int)$orig_height, (int)$x_offset, 0);
-        // Nincs szükség update_image() hívására Imagick esetén.
+        // Nincs szükség további update_image() hívására Imagick esetén.
     }
 
     update_post_meta( $post_id, '_cover_image', esc_url_raw($cover_file_url) );
