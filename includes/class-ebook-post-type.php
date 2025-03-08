@@ -491,7 +491,7 @@ function handle_save_ebook_file_ajax() {
     if (!is_wp_error($attachment_id)) {
         $attach_data = wp_generate_attachment_metadata($attachment_id, $cover_target_file);
         wp_update_attachment_metadata($attachment_id, $attach_data);
-        // Hívjuk meg a segédfüggvényt, így a featured image csak egyszer kerül beállításra
+        // Ezzel egyszer állítjuk be a featured image-t, ha még nem lett beállítva.
         maybe_set_featured_image($post_id);
     }
 
@@ -506,21 +506,15 @@ function handle_save_ebook_file_ajax() {
 
 add_filter('post_thumbnail_html', 'auto_set_post_thumbnail', 10, 5);
 function auto_set_post_thumbnail( $html, $post_id, $post_thumbnail_id, $size, $attr ) {
-    // DOING_AUTOSAVE ellenőrzés: ha autosave (vagy AJAX mentés) folyamatban van, nem módosítjuk
+    // DOING_AUTOSAVE ellenőrzése: autosave vagy AJAX mentés esetén ne módosítsuk a featured image-t
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
         return $html;
     }
 
-    // Ha még nincs beállítva a featured image, akkor megpróbáljuk beállítani
-    if ( ! has_post_thumbnail( $post_id ) ) {
-        maybe_set_featured_image( $post_id );
-        $html = get_the_post_thumbnail( $post_id, $size, $attr );
-        // Ha akár így sem sikerült, használjunk alapértelmezett képet
-        if ( empty( $html ) ) {
-            $html = '<img src="' . plugin_dir_url( __FILE__ ) . '../assets/images/default-thumbnail.jpg" alt="Alapértelmezett kép">';
-        }
+    if ( has_post_thumbnail( $post_id ) ) {
+        return get_the_post_thumbnail( $post_id, $size, $attr );
     }
-    return $html;
+    return '<img src="' . plugin_dir_url(__FILE__) . '../assets/images/default-thumbnail.jpg" alt="Alapértelmezett kép">';
 }
 
 /**
