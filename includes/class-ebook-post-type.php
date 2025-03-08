@@ -226,13 +226,24 @@ function save_ebook_file_meta_box($post_id) {
     
     // Ebook ár és devizanem mentése
     if (isset($_POST['ebook_price'])) {
-        update_post_meta($post_id, '_ebook_price', sanitize_text_field($_POST['ebook_price']));
+        $price_input = sanitize_text_field($_POST['ebook_price']);
+        // Ha üres string vagy 0, akkor Free legyen az érték
+        if ( $price_input === '' || floatval($price_input) === 0 ) {
+            update_post_meta($post_id, '_ebook_price', 'Free');
+        } elseif ( floatval($price_input) < 0 ) {
+            // Negatív érték esetén hiba: ne engedje menteni
+            set_transient("ebook_file_error_$post_id", __('Az ebook ára nem lehet negatív érték!', 'ebook-sales'), 45);
+            wp_update_post(array('ID' => $post_id, 'post_status' => 'draft'));
+            return;
+        } else {
+            update_post_meta($post_id, '_ebook_price', floatval($price_input));
+        }
     } else {
-        // Ha nincs ár megadva, az ebook nem menthető: állítsuk a posztot vázlatba
         set_transient("ebook_file_error_$post_id", __('Az ebook ára kötelező!', 'ebook-sales'), 45);
         wp_update_post(array('ID' => $post_id, 'post_status' => 'draft'));
         return;
     }
+
     if (isset($_POST['ebook_currency'])) {
         $allowed_currencies = array('USD', 'EUR', 'GBP');
         $currency = sanitize_text_field($_POST['ebook_currency']);
