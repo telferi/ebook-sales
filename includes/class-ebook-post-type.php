@@ -418,19 +418,51 @@ function handle_save_ebook_file_ajax() {
     update_post_meta( $post_id, '_ebook_file', esc_url_raw( $file_url ) );
 
     // Borító kép mentése
-    $cover_filename  = sanitize_file_name( $_FILES['cover_image']['name'] );
-    $cover_file_ext  = strtolower( pathinfo( $cover_filename, PATHINFO_EXTENSION ) );
-    $ebook_base      = pathinfo( $ebook_unique_name, PATHINFO_FILENAME );
-    $cover_unique_name  = $ebook_base . '.' . $cover_file_ext;
-    $cover_target_file  = $covers_dir . '/' . $cover_unique_name;
+    $cover_filename    = sanitize_file_name( $_FILES['cover_image']['name'] );
+    $cover_file_ext    = strtolower( pathinfo( $cover_filename, PATHINFO_EXTENSION ) );
+    $ebook_base        = pathinfo( $ebook_unique_name, PATHINFO_FILENAME );
+    $cover_unique_name = $ebook_base . '.' . $cover_file_ext;
+    $cover_target_file = $covers_dir . '/' . $cover_unique_name;
 
     if ( ! move_uploaded_file( $_FILES['cover_image']['tmp_name'], $cover_target_file ) ) {
         wp_send_json_error( array( 'message' => __( 'Nem sikerült feltölteni a borító képet!', 'ebook-sales' ) ) );
     }
-    $cover_file_url = $upload['baseurl'] . '/ebook_covers/' . $cover_unique_name;
-    update_post_meta( $post_id, '_cover_image', esc_url_raw( $cover_file_url ) );
 
-    // Kiemelt kép beállítása (csak egyszer, itt az AJAX blokkban)
+    // Új rész: A kép 16:9-es arányú középre vágása
+    $editor = wp_get_image_editor( $cover_target_file );
+    if ( ! is_wp_error( $editor ) ) {
+        $size = $editor->get_size();
+        $width = $size['width'];
+        $height = $size['height'];
+        $target_ratio = 16/9;
+        $current_ratio = $width / $height;
+        if ( $current_ratio > $target_ratio ) {
+            // Ha a kép túl széles, szélességből vágunk
+            $new_width = round( $height * $target_ratio );
+            $new_height = $height;
+            $src_x = round( ( $width - $new_width ) / 2 );
+            $src_y = 0;
+        } else {
+            // Ha a kép túl magas, magasságból vágunk
+            $new_width = $width;
+            $new_height = round( $width / $target_ratio );
+            $src_x = 0;
+            $src_y = round( ( $height - $new_height ) / 2 );
+        }
+        // A képrész kivágása a megadott koordinátákkal és méretekkel
+        $editor->crop( $src_x, $src_y, $new_width, $new_height );
+        $saved = $editor->save( $cover_target_file );
+        if ( ! is_wp_error( $saved ) ) {
+            // Frissítjük a cover file útvonalát, ha szükséges
+            $cover_target_file = $saved['path'];
+            $cover_file_url = $upload['baseurl'] . '/ebook_covers/' . basename($cover_target_file);
+            update_post_meta( $post_id, '_cover_image', esc_url_raw($cover_file_url) );
+        }
+    }
+
+    update_post_meta( $post_id, '_cover_image', esc_url_raw($cover_file_url) );
+
+    // Kiemelt kép beállítása (attachment beszúrása)
     require_once( ABSPATH . 'wp-admin/includes/image.php' );
     require_once( ABSPATH . 'wp-admin/includes/file.php' );
     require_once( ABSPATH . 'wp-admin/includes/media.php' );
