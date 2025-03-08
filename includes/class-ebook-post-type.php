@@ -429,29 +429,39 @@ function handle_save_ebook_file_ajax() {
     }
 
     // Új rész: A cover kép 16:9-es arányúvá alakítása úgy, hogy a kép teljes magasságát megtartjuk
-
     $editor = wp_get_image_editor( $cover_target_file );
     if ( ! is_wp_error( $editor ) ) {
         $size = $editor->get_size();
-        $orig_width = $size['width'];
+        $orig_width  = $size['width'];
         $orig_height = $size['height'];
-        $target_ratio = 16/9;
+        $target_ratio = 16 / 9;
         
         // A kívánt végeredmény szélessége a magasság alapján
         $desired_width = round( $orig_height * $target_ratio );
         
         if ( $orig_width > $desired_width ) {
-            // Ha a kép túl széles, akkor vágjuk le a bal és jobb oldalról,
-            // középre igazított crop, így a teljes magasság megmarad.
+            // Ha a kép túl széles, középre igazított crop, így a teljes magasság megmarad.
             $src_x = round( ($orig_width - $desired_width) / 2 );
             $editor->crop( $src_x, 0, $desired_width, $orig_height );
         } elseif ( $orig_width < $desired_width ) {
-            // Ha a kép keskenyebb, mint a kívánt szélesség,
-            // akkor adjunk hozzá átlátszó (vagy adott háttérszínű) kitöltést a bal és jobb oldalán.
-            // Ebben az esetben a kép eredeti mérete megmarad, de a canvas mérete lesz a desired_width x height.
-            $editor->set_canvas_size( $desired_width, $orig_height, 'center', array( 'r' => 0, 'g' => 0, 'b' => 0, 'a' => 127 ) );
+            // Ha a kép keskenyebb, akkor szeretnénk az eredeti képet a vásznon középre helyezni,
+            // és az üres területet átlátszóvá tenni.
+            // Először próbáljuk a set_canvas_size metódust (GD esetén elérhető)
+            if ( method_exists( $editor, 'set_canvas_size' ) ) {
+                $editor->set_canvas_size( $desired_width, $orig_height, 'center', array( 'r' => 0, 'g' => 0, 'b' => 0, 'a' => 127 ) );
+            } else {
+                // Imagick esetén: hozzáférünk az alap Imagick objektumhoz, és kiegészítjük a vásznat
+                $im = $editor->get_image();
+                // Számoljuk ki a bal oldali üres terület szélességét: a kép középre igazítása érdekében
+                $x_offset = round(($desired_width - $orig_width) / 2);
+                $im->setImageBackgroundColor(new ImagickPixel('transparent'));
+                // extentImage: új vászon mérete, és az offset értékek meghatározása
+                $im->extentImage( (int)$desired_width, (int)$orig_height, (int)$x_offset, 0 );
+                // A módosított Imagick objektum mentése vissza az editorba
+                $editor->update_image();
+            }
         }
-
+        
         $saved = $editor->save( $cover_target_file );
         if ( ! is_wp_error( $saved ) ) {
             // Frissítjük a cover kép elérési útját
