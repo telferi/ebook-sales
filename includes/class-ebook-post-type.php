@@ -448,9 +448,10 @@ function handle_save_ebook_file_ajax() {
             // és az üres területet átlátszóvá tenni.
             // Először próbáljuk a set_canvas_size metódust (GD esetén elérhető)
             if ( method_exists( $editor, 'set_canvas_size' ) ) {
+                // GD esetén használjuk a set_canvas_size metódust
                 $editor->set_canvas_size( $desired_width, $orig_height, 'center', array( 'r' => 0, 'g' => 0, 'b' => 0, 'a' => 127 ) );
             } else {
-                // Imagick esetén: hozzáférünk az alap Imagick objektumhoz, és kiegészítjük a vásznat
+                // Imagick esetén próbáljuk meg lekérni az Imagick objektumot
                 if ( method_exists( $editor, 'get_image_object' ) ) {
                     $im = $editor->get_image_object();
                 } else {
