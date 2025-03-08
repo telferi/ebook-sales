@@ -8,6 +8,8 @@ class Ebook_Post_Type {
     public function __construct() {
         add_action('init', array($this, 'register_ebook_post_type'));
         add_action('save_post', array($this, 'set_featured_image_if_not_set'));
+        // Enqueue admin scripts via a hook
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
     }
 
     public function register_ebook_post_type() {
@@ -95,6 +97,28 @@ class Ebook_Post_Type {
             set_post_thumbnail($post_id, $attachment_id);
         }
     }
+
+    // Enqueue-oljuk a pluginhoz tartozó admin JS fájlt
+    public function enqueue_admin_scripts() {
+        // Csak az Ebook poszt szerkesztése oldalain töltsük be
+        $screen = get_current_screen();
+        if (isset($screen->post_type) && 'ebook' === $screen->post_type) {
+            wp_enqueue_script(
+                'ebook-file-upload',
+                plugin_dir_url(__FILE__) . '../assets/js/ebook-file-upload.js',
+                array('jquery'),
+                '1.0',
+                true
+            );
+
+            wp_localize_script('ebook-file-upload', 'ebook_post_data', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce'    => wp_create_nonce('save_ebook_file'),
+                // A post_id itt később dinamikusan kerül beállításra is, ha szükséges
+                'post_id'  => get_the_ID(),
+            ));
+        }
+    }
 }
 
 new Ebook_Post_Type();
@@ -165,64 +189,7 @@ function ebook_file_meta_box_callback($post) {
             <a href="<?php echo esc_url($cover_image); ?>" target="_blank"><?php echo esc_html(basename($cover_image)); ?></a>
         </p>
     <?php endif; ?>
-    <script type="text/javascript">
-    jQuery(document).ready(function($){
-        $('#ebook_file_save').on('click', function(e) {
-            e.preventDefault();
-            
-            // Ellenőrizzük, hogy a WordPress szerkesztő title mezője (#title) van-e kitöltve
-            var titleField = $('#title');
-            var ebookInput = $('#ebook_file')[0];
-            if ( ebookInput.files.length === 0 ) {
-                alert('<?php _e('Kérjük, válassza ki az ebook fájlt!', 'ebook-sales'); ?>');
-                return;
-            }
-            var file = ebookInput.files[0];
-            // Ha a title mező üres (csak whitespace), akkor vegyük az ebook fájl nevét kiterjesztés nélkül,
-            // és állítsuk be úgy, hogy az első karakter nagybetűs legyen.
-            if ($.trim(titleField.val()) === '') {
-                var filename = file.name;
-                // Eltávolítjuk az utolsó pont utáni részt (kiterjesztés)
-                var baseName = filename.replace(/\.[^/.]+$/, "");
-                // Az első betű nagybetűssé tétele
-                var newTitle = baseName.charAt(0).toUpperCase() + baseName.slice(1);
-                titleField.val(newTitle);
-            }
-            
-            // Összeállítjuk az AJAX formData-t a fájlokhoz
-            var coverInput = $('#cover_image')[0];
-            if (coverInput.files.length === 0) {
-                alert('<?php _e('Kérjük, válassza ki a borító képet!', 'ebook-sales'); ?>');
-                return;
-            }
-            var coverFile = coverInput.files[0];
-            var formData = new FormData();
-            formData.append('ebook_file', file);
-            formData.append('cover_image', coverFile);
-            formData.append('post_id', <?php echo $post->ID; ?>);
-            formData.append('action', 'save_ebook_file_ajax');
-            formData.append('ebook_file_nonce', $('#ebook_file_nonce').val());
-            
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response){
-                    if(response.success) {
-                        $('#ebook_file_message').html('<span style="color:green;">' + response.data.message + '</span>');
-                    } else {
-                        $('#ebook_file_message').html('<span style="color:red;">' + response.data.message + '</span>');
-                    }
-                },
-                error: function(){
-                    $('#ebook_file_message').html('<span style="color:red;"><?php _e("Fájl feltöltési hiba", "ebook-sales"); ?></span>');
-                }
-            });
-        });
-    });
-    </script>
+    <script type="text/javascript" src="<?php echo get_template_directory_uri(); ?>/assets/js/ebook-file-upload.js"></script>
     <?php
 }
 
@@ -462,7 +429,7 @@ function auto_set_post_thumbnail($html, $post_id, $post_thumbnail_id, $size, $at
 
         // Ha még mindig üres, használjunk alapértelmezett képet
         if (empty($html)) {
-            $html = '<img src="' . get_template_directory_uri() . '/images/default-thumbnail.jpg" alt="Alapértelmezett kép">';
+            $html = '<img src="' . plugin_dir_url(__FILE__) . '../assets/images/default-thumbnail.jpg" alt="Alapértelmezett kép">';
         }
     }
     return $html;
