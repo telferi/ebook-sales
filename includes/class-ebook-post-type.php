@@ -483,6 +483,27 @@ function handle_save_ebook_file_ajax() {
         }
     }
 
+    // Imagick esetén: a kép keskenyebb, mint a kívánt szélesség (16:9), ezért adunk hozzá átlátszó kitöltést
+    if (!method_exists($editor, 'set_canvas_size')) {
+        if (method_exists($editor, 'get_image_object')) {
+            $im = $editor->get_image_object();
+        } else {
+            // Reflection segítségével hozzáférünk a védett 'image' tulajdonsághoz
+            $reflection = new ReflectionClass($editor);
+            $property = $reflection->getProperty('image');
+            $property->setAccessible(true);
+            $im = $property->getValue($editor);
+        }
+        // Számítsuk ki a bal és jobb oldali kitöltés pontos szélességét
+        $x_offset = floor(($desired_width - $orig_width) / 2);
+        // Tisztítsuk az előző vászonszabályokat, hogy az extentImage ne torzítson
+        $im->setImagePage(0, 0, 0, 0);
+        $im->setImageBackgroundColor(new ImagickPixel('transparent'));
+        // Az extentImage metódus kiterjeszti a vásznat: (új szélesség, új magasság, x_offset, y_offset)
+        $im->extentImage((int)$desired_width, (int)$orig_height, (int)$x_offset, 0);
+        // Nincs szükség update_image() hívására Imagick esetén.
+    }
+
     update_post_meta( $post_id, '_cover_image', esc_url_raw($cover_file_url) );
 
     // Kiemelt kép beállítása (attachment beszúrása)
