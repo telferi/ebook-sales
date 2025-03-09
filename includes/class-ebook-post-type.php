@@ -186,7 +186,7 @@ function ebook_file_meta_box_callback($post) {
 
 add_action('save_post', 'save_ebook_file_meta_box');
 function save_ebook_file_meta_box($post_id) {
-    // Ellenőrizd a nonce-t, autosave-t és jogosultságot
+    // Ellenőrzések: nonce, autosave, jogosultság
     if (!isset($_POST['ebook_file_nonce']) || !wp_verify_nonce($_POST['ebook_file_nonce'], 'save_ebook_file')) {
         return;
     }
@@ -194,6 +194,13 @@ function save_ebook_file_meta_box($post_id) {
         return;
     }
     if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+    
+    // Ha már létezik meta, akkor feltételezhető, hogy már mentve lett az adott ajax útvonal által
+    $existing_ebook = get_post_meta($post_id, '_ebook_file', true);
+    $existing_cover = get_post_meta($post_id, '_cover_image', true);
+    if ($existing_ebook && $existing_cover) {
         return;
     }
     
@@ -331,6 +338,13 @@ function handle_save_ebook_file_ajax() {
         wp_send_json_error(array('message' => __('Hiányzó post ID!', 'ebook-sales')));
     }
     $post_id = intval($_POST['post_id']);
+
+    // Ha már létezik meta, akkor ne folytassa a mentést
+    $existing_ebook = get_post_meta($post_id, '_ebook_file', true);
+    $existing_cover = get_post_meta($post_id, '_cover_image', true);
+    if ($existing_ebook && $existing_cover) {
+        wp_send_json_error(array('message' => __('A fájlok már el vannak mentve!', 'ebook-sales')));
+    }
 
     // Ellenőrizzük, hogy mindkét fájl megfelelően ki van-e választva
     if (
