@@ -179,7 +179,7 @@ function ebook_file_meta_box_callback($post) {
             <?php _e('Jelenlegi borító kép:', 'ebook-sales'); ?>
             <a href="<?php echo esc_url($cover_image); ?>" target="_blank"><?php echo esc_html(basename($cover_image)); ?></a>
         </p>
-    <?php endif; ?
+    <?php endif; ?>
 //<script type="text/javascript" src="<?php echo plugin_dir_url(__FILE__); ?>../assets/js/ebook-file-upload.js"></script>
     <?php
 }
