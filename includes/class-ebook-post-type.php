@@ -426,9 +426,9 @@ function handle_save_ebook_file_ajax() {
             $src_x = round(($orig_width - $desired_width) / 2);
             $editor->crop($src_x, 0, $desired_width, $orig_height);
         } elseif ($orig_width < $desired_width) {
-            // Ha a kép keskenyebb: GD vagy Imagick alapján kiterjesztjük, hogy a kép tartalma középre kerüljön
+            // Ha a kép keskenyebb:
             if (method_exists($editor, 'set_canvas_size')) {
-                // GD esetén
+                // GD esetén: kiterjesztjük a vásznat, hogy a kép tartalma középre kerüljön
                 $editor->set_canvas_size(
                     $desired_width,
                     $orig_height,
@@ -436,26 +436,8 @@ function handle_save_ebook_file_ajax() {
                     array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 127)
                 );
             } else {
-                // Imagick esetén
-                if (method_exists($editor, 'get_image_object')) {
-                    $im = $editor->get_image_object();
-                } else {
-                    $reflection = new ReflectionClass($editor);
-                    $property = $reflection->getProperty('image');
-                    $property->setAccessible(true);
-                    $im = $property->getValue($editor);
-                }
-                $x_offset = floor(($desired_width - $orig_width) / 2);
-                // Az új vászonra kompozícionáljuk az eredeti képet, hogy az tartalom középre kerüljön
-                $new = new Imagick();
-                $new->newImage((int)$desired_width, (int)$orig_height, new ImagickPixel('transparent'));
-                $new->setImageFormat($im->getImageFormat());
-                $new->compositeImage($im, Imagick::COMPOSITE_OVER, (int)$x_offset, 0);
-                // Frissítjük az editor képét az új képre
-                $reflection = new ReflectionClass($editor);
-                $property = $reflection->getProperty('image');
-                $property->setAccessible(true);
-                $property->setValue($editor, $new);
+                // Fallback: ha nincs set_canvas_size, nem módosítjuk a képet.
+                // Opcionálisan itt implementálhatunk egy GD-alapú vászon létrehozást.
             }
         }
         
