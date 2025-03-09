@@ -75,6 +75,15 @@ class Ebook_Post_Type {
                 true
             );
 
+            // Új js fájl: a cím automatikus beillesztéshez
+            wp_enqueue_script(
+                'ebook-title-paste',
+                plugin_dir_url(__FILE__) . '../assets/js/ebook-titlepaste.js',
+                array('jquery'),
+                '1.0',
+                true
+            );
+
             wp_localize_script('ebook-file-upload', 'ebook_post_data', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
                 'nonce'    => wp_create_nonce('save_ebook_file'),
@@ -170,8 +179,8 @@ function ebook_file_meta_box_callback($post) {
             <?php _e('Jelenlegi borító kép:', 'ebook-sales'); ?>
             <a href="<?php echo esc_url($cover_image); ?>" target="_blank"><?php echo esc_html(basename($cover_image)); ?></a>
         </p>
-    <?php endif; ?>
-    <script type="text/javascript" src="<?php echo plugin_dir_url(__FILE__); ?>../assets/js/ebook-file-upload.js"></script>
+    <?php endif; ?
+//<script type="text/javascript" src="<?php echo plugin_dir_url(__FILE__); ?>../assets/js/ebook-file-upload.js"></script>
     <?php
 }
 
