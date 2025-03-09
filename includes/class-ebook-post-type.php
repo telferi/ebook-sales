@@ -531,3 +531,7 @@ function maybe_set_featured_image( $post_id ) {
         set_post_thumbnail( $post_id, $attachment_id );
     }
 }
+
+add_filter('wp_image_editors', function($editors) {
+    return array('WP_Image_Editor_GD', 'WP_Image_Editor_Imagick');
+});
