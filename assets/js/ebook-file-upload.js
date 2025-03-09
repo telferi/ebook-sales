@@ -32,6 +32,8 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success) {
                     $('#ebook_file_message').html('<span style="color:green;">' + response.data.message + '</span>');
+                    // Jelzés, hogy az AJAX-fájl mentés sikeres volt
+                    $('#ebook_file_uploaded').val('1');
                 } else {
                     $('#ebook_file_message').html('<span style="color:red;">' + response.data.message + '</span>');
                 }

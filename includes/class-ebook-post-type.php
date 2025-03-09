@@ -135,9 +135,9 @@ add_action('save_post_ebook', 'set_featured_image_if_not_set');
 
 function ebook_file_meta_box_callback($post) {
     wp_nonce_field('save_ebook_file', 'ebook_file_nonce');
-    $ebook_file   = get_post_meta($post->ID, '_ebook_file', true);
-    $cover_image  = get_post_meta($post->ID, '_cover_image', true);
-    $ebook_price  = get_post_meta($post->ID, '_ebook_price', true);
+    $ebook_file    = get_post_meta($post->ID, '_ebook_file', true);
+    $cover_image   = get_post_meta($post->ID, '_cover_image', true);
+    $ebook_price   = get_post_meta($post->ID, '_ebook_price', true);
     $ebook_currency = get_post_meta($post->ID, '_ebook_currency', true);
     if ( empty($ebook_currency) ) {
         $ebook_currency = 'USD';
@@ -164,6 +164,8 @@ function ebook_file_meta_box_callback($post) {
             <option value="GBP" <?php selected($ebook_currency, 'GBP'); ?>>GBP</option>
         </select>
     </p>
+    <!-- Rejtett mező a fájl upload flag számára -->
+    <input type="hidden" id="ebook_file_uploaded" name="ebook_file_uploaded" value="" />
     <p>
         <button type="button" id="ebook_file_save" class="button"><?php _e('Mentés', 'ebook-sales'); ?></button>
     </p>
@@ -180,7 +182,6 @@ function ebook_file_meta_box_callback($post) {
             <a href="<?php echo esc_url($cover_image); ?>" target="_blank"><?php echo esc_html(basename($cover_image)); ?></a>
         </p>
     <?php endif; ?>
-//<script type="text/javascript" src="<?php echo plugin_dir_url(__FILE__); ?>../assets/js/ebook-file-upload.js"></script>
     <?php
 }
 
@@ -197,7 +198,7 @@ function save_ebook_file_meta_box($post_id) {
         return;
     }
     
-    // Először frissítsük az ebook árát és devizanemét
+    // Frissítsük először az ár- és devizanem meta értékeket
     if ( isset($_POST['ebook_price']) ) {
         $price_input = sanitize_text_field($_POST['ebook_price']);
         if ( $price_input === '' || floatval($price_input) === 0 ) {
@@ -223,9 +224,13 @@ function save_ebook_file_meta_box($post_id) {
         }
         update_post_meta($post_id, '_ebook_currency', $currency);
     }
-
+    
+    // Ha ez AJAX kérés, akkor csak a meta adatokat mentettük és a fájlok mentése AJAX által történik
+    if ( defined('DOING_AJAX') && DOING_AJAX ) {
+        return;
+    }
+    
     // Ezután kezdődjön a fájlok feltöltésének kezelése
-    // Ha új fájl lett kiválasztva
     if ( isset($_FILES['ebook_file']) && !empty($_FILES['ebook_file']['name']) ) {
         // Ha már mentve van a fájl meta, akkor ne töltsük fel újra
         $existing_ebook = get_post_meta($post_id, '_ebook_file', true);
