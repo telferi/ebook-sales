@@ -197,10 +197,10 @@ function save_ebook_file_meta_box($post_id) {
         return;
     }
     
-    // Ha már létezik meta, akkor feltételezhető, hogy már mentve lett az adott ajax útvonal által
+    // Ellenőrzés save_post hook-ban:
     $existing_ebook = get_post_meta($post_id, '_ebook_file', true);
     $existing_cover = get_post_meta($post_id, '_cover_image', true);
-    if ($existing_ebook && $existing_cover) {
+    if ($existing_ebook || $existing_cover) {
         return;
     }
     
@@ -342,7 +342,7 @@ function handle_save_ebook_file_ajax() {
     // Ha már létezik meta, akkor ne folytassa a mentést
     $existing_ebook = get_post_meta($post_id, '_ebook_file', true);
     $existing_cover = get_post_meta($post_id, '_cover_image', true);
-    if ($existing_ebook && $existing_cover) {
+    if ($existing_ebook || $existing_cover) {
         wp_send_json_error(array('message' => __('A fájlok már el vannak mentve!', 'ebook-sales')));
     }
 
