@@ -118,6 +118,12 @@ function ebook_add_meta_box() {
 
 // 📌 Automatikusan beállítja a kiemelt képet a borító képből, ha nincs beállítva
 function set_featured_image_if_not_set($post_id) {
+    static $processing = false;
+    if ( $processing ) {
+        return;
+    }
+    $processing = true;
+    
     if (!has_post_thumbnail($post_id)) {
         $cover = get_post_meta($post_id, '_cover_image', true);
         if ($cover) {
@@ -134,6 +140,8 @@ function set_featured_image_if_not_set($post_id) {
             }
         }
     }
+    
+    $processing = false;
 }
 add_action('save_post_ebook', 'set_featured_image_if_not_set');
 
