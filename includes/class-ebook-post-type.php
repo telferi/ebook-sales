@@ -117,6 +117,15 @@ class Ebook_Post_Type {
                 // A post_id itt később dinamikusan kerül beállításra is, ha szükséges
                 'post_id'  => get_the_ID(),
             ));
+
+            // Enqueue-oljuk a külön ebook title copy scriptet
+            wp_enqueue_script(
+                'ebook-title-copy',
+                plugin_dir_url(__FILE__) . '../assets/js/ebook-title-copy.js',
+                array('jquery'),
+                '1.0',
+                true
+            );
         }
     }
 }

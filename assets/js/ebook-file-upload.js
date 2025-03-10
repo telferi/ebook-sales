@@ -1,24 +1,19 @@
+/// filepath: /home/telferenc/GitMunkamenetek/ebook-sales/assets/js/ebook-file-upload.js
 jQuery(document).ready(function($) {
     $('#ebook_file_save').on('click', function(e) {
         e.preventDefault();
 
-        // Ellenőrizd, hogy a WordPress title mezője (#title) nincs-e üresen
-        var titleField = $('#title');
+        // Ellenőrizd, hogy az ebook fájl ki lett-e választva
         var ebookInput = $('#ebook_file')[0];
         if (ebookInput.files.length === 0) {
             alert('Kérjük, válassza ki az ebook fájlt!');
             return;
         }
         var file = ebookInput.files[0];
-        // Ha a title mező üres (csak whitespace), akkor a fájl nevét használjuk címként
-        if ($.trim(titleField.val()) === '') {
-            var filename = file.name;
-            var baseName = filename.replace(/\.[^/.]+$/, "");
-            var newTitle = baseName.charAt(0).toUpperCase() + baseName.slice(1);
-            titleField.val(newTitle);
-        }
 
-        // Ellenőrizzük a borító kép kiválasztása
+        // A title mező kezelése mostantól a külön scriptben történik
+
+        // Ellenőrizzük a borító kép kiválasztását
         var coverInput = $('#cover_image')[0];
         if (coverInput.files.length === 0) {
             alert('Kérjük, válassza ki a borító képet!');
@@ -30,7 +25,7 @@ jQuery(document).ready(function($) {
         var formData = new FormData();
         formData.append('ebook_file', file);
         formData.append('cover_image', coverFile);
-        formData.append('post_id', ebook_post_data.post_id); // A post_id-t dinamikusan az enqueueolt változóból olvassuk
+        formData.append('post_id', ebook_post_data.post_id); // A post_id dinamikusan az enqueueolt változóból
         formData.append('action', 'save_ebook_file_ajax');
         formData.append('ebook_file_nonce', ebook_post_data.nonce);
 
