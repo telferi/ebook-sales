@@ -498,11 +498,16 @@ function auto_set_post_thumbnail( $html, $post_id, $post_thumbnail_id, $size, $a
  * Segédfüggvény, amely beállítja a featured image-t, ha még nincs.
  */
 function maybe_set_featured_image( $post_id ) {
+    // Távolítsuk el ideiglenesen az automatikus featured image hookot, hogy ne lépjen rekurszióba
+    remove_action('save_post_ebook', 'set_featured_image_if_not_set');
+
     if ( has_post_thumbnail( $post_id ) ) {
+        add_action('save_post_ebook', 'set_featured_image_if_not_set');
         return;
     }
     $cover = get_post_meta( $post_id, '_cover_image', true );
     if ( ! $cover ) {
+        add_action('save_post_ebook', 'set_featured_image_if_not_set');
         return;
     }
     $attachment_id = attachment_url_to_postid( $cover );
@@ -516,6 +521,9 @@ function maybe_set_featured_image( $post_id ) {
     if ( $attachment_id ) {
         set_post_thumbnail( $post_id, $attachment_id );
     }
+
+    // Visszaállítjuk a hookot
+    add_action('save_post_ebook', 'set_featured_image_if_not_set');
 }
 
 add_filter('wp_image_editors', function($editors) {
