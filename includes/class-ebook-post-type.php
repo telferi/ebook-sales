@@ -58,6 +58,10 @@ class Ebook_Post_Type {
             'exclude_from_search'   => false,
             'publicly_queryable'    => true,
             'capability_type'       => 'post',
+            'rewrite'               => array(
+                'slug' => 'ebook',
+                'with_front' => false,
+            ),
         );
         register_post_type('ebook', $args);
     }
