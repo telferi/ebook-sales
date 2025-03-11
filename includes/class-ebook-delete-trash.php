@@ -27,6 +27,12 @@ class Ebook_Delete_Trash {
         if ( $cover_file_url ) {
             $this->delete_file_by_url( $cover_file_url );
         }
+
+        // Új kód: Ha van tárolva cover attachment ID, töröljük a médiatárból is
+        $cover_attachment_id = get_post_meta( $post_id, '_cover_attachment', true );
+        if ( $cover_attachment_id ) {
+            wp_delete_attachment( $cover_attachment_id, true );
+        }
     }
 
     private function delete_file_by_url( $file_url ) {
