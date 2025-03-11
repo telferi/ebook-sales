@@ -38,6 +38,7 @@ require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-dependency-settings.
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-role-ranking-settings.php';// Új
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/handler-dependency-setting.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-delete-trash.php';
+require_once EBOOK_SALES_PLUGIN_DIR . 'includes/ebook-featured-image.php';
 
 // Aktiválás/deaktiválás
 register_activation_hook(__FILE__, 'ebook_sales_activate');
