@@ -449,3 +449,25 @@ function handle_save_ebook_file_ajax(){
         wp_send_json_error(array('message' => __('Fájl feltöltési hiba történt!', 'ebook-sales')));
     }
 }
+
+// Új funkció: a borító kép beállítása kiemelt képnek save draft és publish esetén
+function set_featured_image_from_cover($post_id) {
+    // Ne futtassuk revision vagy autosave esetén
+    if ( wp_is_post_revision($post_id) || wp_is_post_autosave( $post_id ) ) {
+        return;
+    }
+    // Ellenőrizzük, hogy ebook típusú posztról legyen szó
+    if ( get_post_type($post_id) !== 'ebook' ) {
+        return;
+    }
+    // Ha már van beállítva kiemelt kép, nem csinálunk semmit
+    if ( has_post_thumbnail($post_id) ) {
+        return;
+    }
+    // Megkeressük a borító kép attachment ID-t
+    $cover_attachment = get_post_meta($post_id, '_cover_attachment', true);
+    if ( $cover_attachment ) {
+        set_post_thumbnail($post_id, $cover_attachment);
+    }
+}
+add_action('save_post', 'set_featured_image_from_cover', 30);
