@@ -66,6 +66,9 @@ new Ebook_Post_Type();
 
 // Metabox regisztrálása az ebook posztokhoz
 add_action('add_meta_boxes', 'ebook_add_meta_box');
+// Új: Regisztráljuk az AI tartalom generálás meta box-ot
+add_action('add_meta_boxes', 'ai_content_add_meta_box');
+
 function ebook_add_meta_box() {
     add_meta_box(
         'ebook_file_metabox',
@@ -74,6 +77,17 @@ function ebook_add_meta_box() {
         'ebook',
         'normal',
         'default'
+    );
+}
+
+function ai_content_add_meta_box() {
+    add_meta_box(
+        'ai_content_meta_box',                        // ID
+        __('Ai tartalom generálás', 'ebook-sales'),     // Title
+        'ai_content_meta_box_callback',                 // Callback
+        'ebook',                                        // Screen
+        'normal',                                       // Context
+        'default'                                       // Priority
     );
 }
 
@@ -187,6 +201,45 @@ function ebook_file_meta_box_callback($post) {
         });
         $('#save-post, #publish').on('click', function(){
              $('#ebook_file_save, #ebook_file, #cover_image, label[for="ebook_file"], label[for="cover_image"]').hide();
+        });
+    });
+    </script>
+    <?php
+}
+
+function ai_content_meta_box_callback($post) {
+    wp_nonce_field('save_ai_content', 'ai_content_nonce');
+    $ai_content = get_post_meta($post->ID, 'ai_content', true);
+    ?>
+    <p>
+        <textarea name="ai_content" id="ai_content" rows="5" class="widefat"><?php echo esc_textarea($ai_content); ?></textarea>
+    </p>
+    <p>
+        <button type="button" id="generate_ai_content" class="button"><?php _e('Generál', 'ebook-sales'); ?></button>
+    </p>
+    <div id="ai_content_message"></div>
+    <script type="text/javascript">
+    jQuery(document).ready(function($){
+        $('#generate_ai_content').on('click', function(e){
+            e.preventDefault();
+            var apiKey = '<?php echo esc_js(get_option("openai_api_key", "")); ?>';
+            if(apiKey === ''){
+                alert('<?php _e("Először adja meg az OpenAI API kulcsot az AI Setup oldalon!", "ebook-sales"); ?>');
+                return;
+            }
+            var data = {
+                action: 'generate_ai_content',
+                post_id: <?php echo $post->ID; ?>,
+                ai_content_nonce: '<?php echo wp_create_nonce("generate_ai_content"); ?>'
+            };
+            $.post(ajaxurl, data, function(response){
+                if(response.success){
+                    $('#ai_content').val(response.data.content);
+                    $('#ai_content_message').html('<span style="color:green;">' + response.data.message + '</span>');
+                } else {
+                    $('#ai_content_message').html('<span style="color:red;">' + response.data.message + '</span>');
+                }
+            });
         });
     });
     </script>
