@@ -212,7 +212,7 @@ function ai_content_meta_box_callback($post) {
     $ai_content = get_post_meta($post->ID, 'ai_content', true);
     ?>
     <p>
-        <textarea name="ai_content" id="ai_content" rows="5" class="widefat"><?php echo esc_textarea($ai_content); ?></textarea>
+        <input type="text" name="ai_content" id="ai_content" value="<?php echo esc_attr($ai_content); ?>" class="widefat" placeholder="<?php _e('Írja be a promptot...', 'ebook-sales'); ?>" />
     </p>
     <p>
         <button type="button" id="generate_ai_content" class="button"><?php _e('Generál', 'ebook-sales'); ?></button>
