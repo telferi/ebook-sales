@@ -209,10 +209,50 @@ function ebook_file_meta_box_callback($post) {
 
 function ai_content_meta_box_callback($post) {
     wp_nonce_field('save_ai_content', 'ai_content_nonce');
-    $ai_content = get_post_meta($post->ID, 'ai_content', true);
+    $ai_content       = get_post_meta($post->ID, 'ai_content', true);
+    $ai_writing_style = get_post_meta($post->ID, 'ai_writing_style', true);
+    $ai_writing_tone  = get_post_meta($post->ID, 'ai_writing_tone', true);
     ?>
     <p>
         <input type="text" name="ai_content" id="ai_content" value="<?php echo esc_attr($ai_content); ?>" class="widefat" placeholder="<?php _e('Írja be a promptot...', 'ebook-sales'); ?>" />
+    </p>
+    <p>
+        <label for="ai_writing_style"><?php _e('Írás stílusa (Writing Style):', 'ebook-sales'); ?></label>
+        <select name="ai_writing_style" id="ai_writing_style" class="widefat">
+            <option value="Tájékoztató" <?php selected($ai_writing_style, 'Tájékoztató'); ?>>Tájékoztató</option>
+            <option value="Leíró" <?php selected($ai_writing_style, 'Leíró'); ?>>Leíró</option>
+            <option value="Alkotó" <?php selected($ai_writing_style, 'Alkotó'); ?>>Alkotó</option>
+            <option value="Elbeszélés" <?php selected($ai_writing_style, 'Elbeszélés'); ?>>Elbeszélés</option>
+            <option value="Meggyőző" <?php selected($ai_writing_style, 'Meggyőző'); ?>>Meggyőző</option>
+            <option value="Fényvisszaverő" <?php selected($ai_writing_style, 'Fényvisszaverő'); ?>>Fényvisszaverő</option>
+            <option value="Érvelő" <?php selected($ai_writing_style, 'Érvelő'); ?>>Érvelő</option>
+            <option value="Elemző" <?php selected($ai_writing_style, 'Elemző'); ?>>Elemző</option>
+            <option value="Értékelő" <?php selected($ai_writing_style, 'Értékelő'); ?>>Értékelő</option>
+            <option value="Újságírói" <?php selected($ai_writing_style, 'Újságírói'); ?>>Újságírói</option>
+            <option value="Műszaki" <?php selected($ai_writing_style, 'Műszaki'); ?>>Műszaki</option>
+        </select>
+    </p>
+    <p>
+        <label for="ai_writing_tone"><?php _e('Írás hangja (Writing Tone):', 'ebook-sales'); ?></label>
+        <select name="ai_writing_tone" id="ai_writing_tone" class="widefat">
+            <option value="Semleges" <?php selected($ai_writing_tone, 'Semleges'); ?>>Semleges</option>
+            <option value="Hivatalos" <?php selected($ai_writing_tone, 'Hivatalos'); ?>>Hivatalos</option>
+            <option value="Magabiztos" <?php selected($ai_writing_tone, 'Magabiztos'); ?>>Magabiztos</option>
+            <option value="Vidám" <?php selected($ai_writing_tone, 'Vidám'); ?>>Vidám</option>
+            <option value="Tréfás" <?php selected($ai_writing_tone, 'Tréfás'); ?>>Tréfás</option>
+            <option value="Informális" <?php selected($ai_writing_tone, 'Informális'); ?>>Informális</option>
+            <option value="Inspiráló" <?php selected($ai_writing_tone, 'Inspiráló'); ?>>Inspiráló</option>
+            <option value="Szakmai" <?php selected($ai_writing_tone, 'Szakmai'); ?>>Szakmai</option>
+            <option value="Összefolyó" <?php selected($ai_writing_tone, 'Összefolyó'); ?>>Összefolyó</option>
+            <option value="Érzelmi" <?php selected($ai_writing_tone, 'Érzelmi'); ?>>Érzelmi</option>
+            <option value="Meggyőző" <?php selected($ai_writing_tone, 'Meggyőző'); ?>>Meggyőző</option>
+            <option value="Támogató" <?php selected($ai_writing_tone, 'Támogató'); ?>>Támogató</option>
+            <option value="Szarkasztikus" <?php selected($ai_writing_tone, 'Szarkasztikus'); ?>>Szarkasztikus</option>
+            <option value="Leereszkedő" <?php selected($ai_writing_tone, 'Leereszkedő'); ?>>Leereszkedő</option>
+            <option value="Szkeptikus" <?php selected($ai_writing_tone, 'Szkeptikus'); ?>>Szkeptikus</option>
+            <option value="Elbeszélés" <?php selected($ai_writing_tone, 'Elbeszélés'); ?>>Elbeszélés</option>
+            <option value="Újságírói" <?php selected($ai_writing_tone, 'Újságírói'); ?>>Újságírói</option>
+        </select>
     </p>
     <p>
         <button type="button" id="generate_ai_content" class="button"><?php _e('Generál', 'ebook-sales'); ?></button>
