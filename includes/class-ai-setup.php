@@ -30,6 +30,14 @@ class AI_Setup {
 			}
 			if ( isset($_POST['system_prompt']) ) {
 				$prompt = wp_kses_post( $_POST['system_prompt'] );
+// Ellenőrizze, hogy mindhárom kötelező placeholder benne van
+				if ( strpos($prompt, '<Írási stílus>') === false || strpos($prompt, '<Írási hangnem>') === false || strpos($prompt, '<Nyelv>') === false ) {
+					echo '<div class="error"><p>Hiba: A system promptnek tartalmaznia kell a következő placeholder-eket: &lt;Írási stílus&gt;, &lt;Írási hangnem&gt; és &lt;Nyelv&gt;!</p></div>';
+					return;
+				}
+				// Mentjük az eredeti változatot "basic_system_prompt" néven, a placeholder-ek változatlanul maradnak.
+				update_option( 'basic_system_prompt', $prompt );
+				// Az aktuális system_prompt opciót is frissítjük
 				update_option( 'system_prompt', $prompt );
 			}
 			echo '<div class="updated"><p>Beállítások elmentve.</p></div>';
