@@ -13,9 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 function ebook_sales_allow_placeholders( $allowed_tags, $context ) {
 	// Csak a rendszer prompt specifikus kontextusban bővítjük az engedélyezett tageket.
 	if ( $context === 'system_prompt' ) {
-		$allowed_tags['írási-stílus'] = array();
-		$allowed_tags['írási-hangnem'] = array();
-		$allowed_tags['nyelv']          = array();
+		$allowed_tags['Írási-stílus'] = array();
+		$allowed_tags['Írási-hangnem'] = array();
+		$allowed_tags['Nyelv']          = array();
 	}
 	return $allowed_tags;
 }
