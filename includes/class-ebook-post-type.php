@@ -212,6 +212,7 @@ function ai_content_meta_box_callback($post) {
     $ai_content       = get_post_meta($post->ID, 'ai_content', true);
     $ai_writing_style = get_post_meta($post->ID, 'ai_writing_style', true);
     $ai_writing_tone  = get_post_meta($post->ID, 'ai_writing_tone', true);
+    $ai_output_language = get_post_meta($post->ID, 'ai_output_language', true);
     ?>
     <p>
         <input type="text" name="ai_content" id="ai_content" value="<?php echo esc_attr($ai_content); ?>" class="widefat" placeholder="<?php _e('Írja be a promptot...', 'ebook-sales'); ?>" />
@@ -252,6 +253,16 @@ function ai_content_meta_box_callback($post) {
             <option value="Szkeptikus" <?php selected($ai_writing_tone, 'Szkeptikus'); ?>>Szkeptikus</option>
             <option value="Elbeszélés" <?php selected($ai_writing_tone, 'Elbeszélés'); ?>>Elbeszélés</option>
             <option value="Újságírói" <?php selected($ai_writing_tone, 'Újságírói'); ?>>Újságírói</option>
+        </select>
+    </p>
+    <p>
+        <label for="ai_output_language"><?php _e('Kimeneti nyelv:', 'ebook-sales'); ?></label>
+        <select name="ai_output_language" id="ai_output_language" class="widefat">
+            <option value="hu" <?php selected($ai_output_language, 'hu'); ?>>Magyar</option>
+            <option value="en" <?php selected($ai_output_language, 'en'); ?>>Angol</option>
+            <option value="de" <?php selected($ai_output_language, 'de'); ?>>Német</option>
+            <option value="fr" <?php selected($ai_output_language, 'fr'); ?>>Francia</option>
+            <option value="es" <?php selected($ai_output_language, 'es'); ?>>Spanyol</option>
         </select>
     </p>
     <p>
