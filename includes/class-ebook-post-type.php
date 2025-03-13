@@ -86,7 +86,7 @@ function ai_content_add_meta_box() {
         __('Ai tartalom generálás', 'ebook-sales'),     // Title
         'ai_content_meta_box_callback',                 // Callback
         'ebook',                                        // Screen
-        'normal',                                       // Context
+        'side',    // Changed from "normal" to "side"
         'default'                                       // Priority
     );
 }
