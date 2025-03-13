@@ -39,6 +39,7 @@ require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-role-ranking-setting
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/handler-dependency-setting.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-delete-trash.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/ebook-featured-image.php';
+require_once EBOOK_SALES_PLUGIN_DIR . 'includes/handle-ai-generate.php';
 
 // Új AI setup osztály betöltése
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ai-setup.php';
