@@ -8,8 +8,17 @@ function generate_ai_content_callback() {
 	check_ajax_referer('generate_ai_content', 'ai_content_nonce');
 	
 	$post_id = intval($_POST['post_id']);
-	// Lekérjük a mentett system prompt sablont (ez nem módosul automatikusan)
+	// Lekérjük a mentett basic system prompt sablont
 	$basic_prompt = get_option('basic_system_prompt', '');
+	// Biztosítjuk, hogy ne legyen üres prompt (fallback)
+	if ( empty($basic_prompt) ) {
+		$basic_prompt = "  
+TE EGY PRÉMIUM EBOOK MARKETING SZAKÉRTŐ VAGY, AKINEK FELADATA LENYŰGÖZŐ, ÉRDEKES ÉS MEGGYŐZŐ ISMERTETŐT ÍRNI A FELTÖLTÖTT EBOOKHOZ.  
+
+- **ANALIZÁLD** az eBook tartalmát  
+- **FOGALMAZD MEG**: <Írási stílus>, <Írási hangnem>, <Nyelv>";
+	}
+	
 	// Lekérjük a post meta adatokat
 	$writing_style   = get_post_meta($post_id, 'ai_writing_style', true);
 	$writing_tone    = get_post_meta($post_id, 'ai_writing_tone', true);
@@ -22,8 +31,8 @@ function generate_ai_content_callback() {
 			$basic_prompt
 	);
 	
-	// Extra adatok hozzáadása: a POST-ból kapott 'ai_extra_data' értékkel
-	$extra_data = isset($_POST['ai_extra_data']) ? $_POST['ai_extra_data'] : '';
+	// Extra adatok hozzáadása: raw input használata wp_unslash()-tal
+	$extra_data = isset($_POST['ai_extra_data']) ? wp_unslash($_POST['ai_extra_data']) : '';
 	if(!empty($extra_data)) {
 		$processed_prompt .= "\n\n" . $extra_data;
 	}
