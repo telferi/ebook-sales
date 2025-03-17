@@ -39,9 +39,8 @@ class AI_Setup {
             }
 
             if (isset($_POST['system_prompt'])) {
-                $prompt = wp_kses_post($_POST['system_prompt']);
-                
-                // ✅ A system promptot érintetlenül elmentjük, nem helyettesítjük be a placeholder-eket!
+                // 🔹 Helyesen mentjük a system promptot anélkül, hogy módosítanánk a placeholder-eket
+                $prompt = htmlspecialchars_decode($_POST['system_prompt'], ENT_QUOTES);
                 update_option('basic_system_prompt', $prompt);
                 update_option('system_prompt', $prompt);
                 
