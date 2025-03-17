@@ -24,6 +24,17 @@ TE EGY PRÉMIUM EBOOK MARKETING SZAKÉRTŐ VAGY, AKINEK FELADATA LENYŰGÖZŐ, �
 	$writing_style   = get_post_meta($post_id, 'ai_writing_style', true);
 	$writing_tone    = get_post_meta($post_id, 'ai_writing_tone', true);
 	$output_language = get_post_meta($post_id, 'ai_output_language', true);
+
+	// Alapértelmezett értékek, ha a meta mezők üresek
+	if ( empty($writing_style) ) {
+		$writing_style = 'Tájékoztató';
+	}
+	if ( empty($writing_tone) ) {
+		$writing_tone = 'Semleges';
+	}
+	if ( empty($output_language) ) {
+		$output_language = 'hu';
+	}
 	
 	error_log("Meta values: style={$writing_style} tone={$writing_tone} language={$output_language}");
 
