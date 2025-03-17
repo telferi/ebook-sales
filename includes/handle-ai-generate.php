@@ -10,6 +10,7 @@ function generate_ai_content_callback() {
 	$post_id = intval($_POST['post_id']);
 	// Lekérjük a mentett basic system prompt sablont
 	$basic_prompt = get_option('basic_system_prompt', '');
+	error_log("Basic prompt: " . $basic_prompt);
 	// Biztosítjuk, hogy ne legyen üres prompt (fallback)
 	if ( empty($basic_prompt) ) {
 		$basic_prompt = "  
@@ -24,6 +25,8 @@ TE EGY PRÉMIUM EBOOK MARKETING SZAKÉRTŐ VAGY, AKINEK FELADATA LENYŰGÖZŐ, �
 	$writing_tone    = get_post_meta($post_id, 'ai_writing_tone', true);
 	$output_language = get_post_meta($post_id, 'ai_output_language', true);
 	
+	error_log("Meta values: style={$writing_style} tone={$writing_tone} language={$output_language}");
+
 	// Cseréljük ki a placeholder-eket a basic_prompt sablonban
 	$processed_prompt = str_replace(
 		array('<Írási stílus>', '<Írási hangnem>', '<Nyelv>'),
@@ -37,6 +40,8 @@ TE EGY PRÉMIUM EBOOK MARKETING SZAKÉRTŐ VAGY, AKINEK FELADATA LENYŰGÖZŐ, �
 		$processed_prompt .= "\n\n" . $extra_data;
 	}
 	
+	error_log("Processed prompt: " . $processed_prompt);
+
 	// Itt kell az OpenAI API hívást végrehajtani a $processed_prompt értékkel…
 	// Példa eredmény:
 	$response_data = array(
