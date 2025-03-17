@@ -59,6 +59,9 @@ TE EGY PRÉMIUM EBOOK MARKETING SZAKÉRTŐ VAGY, AKINEK FELADATA LENYŰGÖZŐ, �
 		'content' => "Generált tartalom a következő prompttal: " . $processed_prompt,
 		'message' => 'Sikeres generálás!'
 	);
+
+	// Ha szeretnéd a végleges promptot elmenteni a system_prompt opcióba, akkor:
+	// update_option('system_prompt', $processed_prompt);
 	
 	wp_send_json_success($response_data);
 }
