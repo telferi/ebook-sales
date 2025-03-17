@@ -209,14 +209,10 @@ function ebook_file_meta_box_callback($post) {
 
 function ai_content_meta_box_callback($post) {
     wp_nonce_field('save_ai_content', 'ai_content_nonce');
-    $ai_content       = get_post_meta($post->ID, 'ai_content', true);
     $ai_writing_style = get_post_meta($post->ID, 'ai_writing_style', true);
     $ai_writing_tone  = get_post_meta($post->ID, 'ai_writing_tone', true);
     $ai_output_language = get_post_meta($post->ID, 'ai_output_language', true);
     ?>
-    <p>
-        <input type="text" name="ai_content" id="ai_content" value="<?php echo esc_attr($ai_content); ?>" class="widefat" placeholder="<?php _e('Írja be a promptot...', 'ebook-sales'); ?>" />
-    </p>
     <p>
         <label for="ai_writing_style"><?php _e('Írás stílusa (Writing Style):', 'ebook-sales'); ?></label>
         <select name="ai_writing_style" id="ai_writing_style" class="widefat">
@@ -266,6 +262,11 @@ function ai_content_meta_box_callback($post) {
         </select>
     </p>
     <p>
+        <!-- Új beviteli mező az extra adatokhoz -->
+        <label for="ai_extra_data"><?php _e('Extra adatok:', 'ebook-sales'); ?></label>
+        <input type="text" name="ai_extra_data" id="ai_extra_data" value="" class="widefat" placeholder="<?php _e('Adja meg az extra adatokat...', 'ebook-sales'); ?>" />
+    </p>
+    <p>
         <button type="button" id="generate_ai_content" class="button"><?php _e('Generál', 'ebook-sales'); ?></button>
     </p>
     <div id="ai_content_message"></div>
@@ -281,12 +282,13 @@ function ai_content_meta_box_callback($post) {
             var data = {
                 action: 'generate_ai_content',
                 post_id: <?php echo $post->ID; ?>,
-                ai_content_nonce: '<?php echo wp_create_nonce("generate_ai_content"); ?>'
+                ai_content_nonce: '<?php echo wp_create_nonce("generate_ai_content"); ?>',
+                ai_extra_data: $('#ai_extra_data').val()  // Extra adatok elküldése
             };
             $.post(ajaxurl, data, function(response){
                 if(response.success){
-                    $('#ai_content').val(response.data.content);
                     $('#ai_content_message').html('<span style="color:green;">' + response.data.message + '</span>');
+                    // A generált tartalom megjelenik (a válaszban visszakapott prompt)
                 } else {
                     $('#ai_content_message').html('<span style="color:red;">' + response.data.message + '</span>');
                 }
