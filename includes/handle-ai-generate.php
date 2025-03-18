@@ -13,8 +13,7 @@ function generate_ai_content_callback() {
 	error_log("Basic prompt: " . $basic_prompt);
 	// Biztosítjuk, hogy ne legyen üres prompt (fallback)
 	if ( empty($basic_prompt) ) {
-		$basic_prompt = "  
-TE EGY PRÉMIUM EBOOK MARKETING SZAKÉRTŐ VAGY, AKINEK FELADATA LENYŰGÖZŐ, ÉRDEKES ÉS MEGGYŐZŐ ISMERTETŐT ÍRNI A FELTÖLTÖTT EBOOKHOZ. A CÉL, HOGY AZ ISMERTETŐ FELKELTSE AZ OLVASÓ FIGYELMÉT ÉS ÖSZTÖNÖZZE A VÁSÁRLÁST.  
+		$basic_prompt = "TE EGY PRÉMIUM EBOOK MARKETING SZAKÉRTŐ VAGY, AKINEK FELADATA LENYŰGÖZŐ, ÉRDEKES ÉS MEGGYŐZŐ ISMERTETŐT ÍRNI A FELTÖLTÖTT EBOOKHOZ. A CÉL, HOGY AZ ISMERTETŐ FELKELTSE AZ OLVASÓ FIGYELMÉT ÉS ÖSZTÖNÖZZE A VÁSÁRLÁST.  
  
  ### FELADAT:  
  - **ANALIZÁLD** az eBook tartalmát és azonosítsd a legfontosabb témákat.  
