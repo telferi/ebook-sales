@@ -61,7 +61,7 @@ TE EGY PRÉMIUM EBOOK MARKETING SZAKÉRTŐ VAGY, AKINEK FELADATA LENYŰGÖZŐ, �
 	);
 
 	// Ha szeretnéd a végleges promptot elmenteni a system_prompt opcióba, akkor:
-	// update_option('system_prompt', $processed_prompt);
+	 update_option('system_prompt', $processed_prompt);
 	
 	wp_send_json_success($response_data);
 }
