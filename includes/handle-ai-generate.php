@@ -50,8 +50,10 @@ TE EGY PRÉMIUM EBOOK MARKETING SZAKÉRTŐ VAGY, AKINEK FELADATA LENYŰGÖZŐ, �
 	if(!empty($extra_data)) {
 		$processed_prompt .= "\n\n" . $extra_data;
 	}
-	
+	update_option('system_prompt', $processed_prompt);
+
 	error_log("Processed prompt: " . $processed_prompt);
+	error_log("Processed prompt: " . $system_prompt);
 
 	// Itt kell az OpenAI API hívást végrehajtani a $processed_prompt értékkel…
 	// Példa eredmény:
@@ -61,7 +63,7 @@ TE EGY PRÉMIUM EBOOK MARKETING SZAKÉRTŐ VAGY, AKINEK FELADATA LENYŰGÖZŐ, �
 	);
 
 	// Ha szeretnéd a végleges promptot elmenteni a system_prompt opcióba, akkor:
-	 update_option('system_prompt', $processed_prompt);
+	
 	
 	wp_send_json_success($response_data);
 }
