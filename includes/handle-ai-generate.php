@@ -52,8 +52,8 @@ TE EGY PRÉMIUM EBOOK MARKETING SZAKÉRTŐ VAGY, AKINEK FELADATA LENYŰGÖZŐ, �
 	}
 	update_option('system_prompt', $processed_prompt);
 
-	error_log("Processed prompt: " . $processed_prompt);
-	error_log("Processed prompt: " . $system_prompt);
+	//error_log("Processed prompt: " . $processed_prompt);
+	//error_log("Processed prompt: " . $system_prompt);
 
 	// Itt kell az OpenAI API hívást végrehajtani a $processed_prompt értékkel…
 	// Példa eredmény:
