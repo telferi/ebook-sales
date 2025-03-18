@@ -8,6 +8,18 @@ function generate_ai_content_callback() {
 	check_ajax_referer('generate_ai_content', 'ai_content_nonce');
 	
 	$post_id = intval($_POST['post_id']);
+
+	// Mentés: ha vannak új meta értékek a POST-ban, frissítsük őket
+	if ( isset($_POST['ai_writing_style']) ) {
+		update_post_meta($post_id, 'ai_writing_style', sanitize_text_field($_POST['ai_writing_style']));
+	}
+	if ( isset($_POST['ai_writing_tone']) ) {
+		update_post_meta($post_id, 'ai_writing_tone', sanitize_text_field($_POST['ai_writing_tone']));
+	}
+	if ( isset($_POST['ai_output_language']) ) {
+		update_post_meta($post_id, 'ai_output_language', sanitize_text_field($_POST['ai_output_language']));
+	}
+
 	// Lekérjük a mentett basic system prompt sablont
 	$basic_prompt = get_option('basic_system_prompt', '');
 	error_log("Basic prompt: " . $basic_prompt);
@@ -49,7 +61,7 @@ function generate_ai_content_callback() {
  🔹 A generált szöveg mindig legyen *érdekes, figyelemfelkeltő és ösztönző*!" ;
 	}
 	
-	// Lekérjük a post meta adatokat
+	// Lekérjük a frissen elmentett meta adatokat
 	$writing_style   = get_post_meta($post_id, 'ai_writing_style', true);
 	$writing_tone    = get_post_meta($post_id, 'ai_writing_tone', true);
 	$output_language = get_post_meta($post_id, 'ai_output_language', true);
