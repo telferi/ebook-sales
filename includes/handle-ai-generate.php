@@ -20,6 +20,18 @@ function generate_ai_content_callback() {
 		update_post_meta($post_id, 'ai_output_language', sanitize_text_field($_POST['ai_output_language']));
 	}
 
+	// Frissített meta értékek lekérése: ha POST-ban vannak, azokat használjuk
+	$writing_style   = isset($_POST['ai_writing_style'])   ? sanitize_text_field($_POST['ai_writing_style'])   : get_post_meta($post_id, 'ai_writing_style', true);
+	$writing_tone    = isset($_POST['ai_writing_tone'])    ? sanitize_text_field($_POST['ai_writing_tone'])    : get_post_meta($post_id, 'ai_writing_tone', true);
+	$output_language = isset($_POST['ai_output_language']) ? sanitize_text_field($_POST['ai_output_language']) : get_post_meta($post_id, 'ai_output_language', true);
+
+	// Alapértelmezett értékek, ha a meta mezők üresek
+	if ( empty($writing_style) ) { $writing_style = 'Tájékoztató'; }
+	if ( empty($writing_tone) ) { $writing_tone = 'Semleges'; }
+	if ( empty($output_language) ) { $output_language = 'hu'; }
+
+	error_log("Meta values: style={$writing_style} tone={$writing_tone} language={$output_language}");
+
 	// Lekérjük a mentett basic system prompt sablont
 	$basic_prompt = get_option('basic_system_prompt', '');
 	error_log("Basic prompt: " . $basic_prompt);
@@ -61,24 +73,6 @@ function generate_ai_content_callback() {
  🔹 A generált szöveg mindig legyen *érdekes, figyelemfelkeltő és ösztönző*!" ;
 	}
 	
-	// Lekérjük a frissen elmentett meta adatokat
-	$writing_style   = get_post_meta($post_id, 'ai_writing_style', true);
-	$writing_tone    = get_post_meta($post_id, 'ai_writing_tone', true);
-	$output_language = get_post_meta($post_id, 'ai_output_language', true);
-
-	// Alapértelmezett értékek, ha a meta mezők üresek
-	if ( empty($writing_style) ) {
-		$writing_style = 'Tájékoztató';
-	}
-	if ( empty($writing_tone) ) {
-		$writing_tone = 'Semleges';
-	}
-	if ( empty($output_language) ) {
-		$output_language = 'hu';
-	}
-	
-	error_log("Meta values: style={$writing_style} tone={$writing_tone} language={$output_language}");
-
 	// Cseréljük ki a placeholder-eket a basic_prompt sablonban
 	$processed_prompt = str_replace(
 		array('<Írási stílus>', '<Írási hangnem>', '<Nyelv>'),

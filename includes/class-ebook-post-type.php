@@ -283,7 +283,10 @@ function ai_content_meta_box_callback($post) {
                 action: 'generate_ai_content',
                 post_id: <?php echo $post->ID; ?>,
                 ai_content_nonce: '<?php echo wp_create_nonce("generate_ai_content"); ?>',
-                ai_extra_data: $('#ai_extra_data').val()  // Extra adatok elküldése
+                ai_extra_data: $('#ai_extra_data').val(),
+                ai_writing_style: $('#ai_writing_style').val(),
+                ai_writing_tone: $('#ai_writing_tone').val(),
+                ai_output_language: $('#ai_output_language').val()
             };
             $.post(ajaxurl, data, function(response){
                 if(response.success){
