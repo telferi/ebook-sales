@@ -254,11 +254,11 @@ function ai_content_meta_box_callback($post) {
     <p>
         <label for="ai_output_language"><?php _e('Kimeneti nyelv:', 'ebook-sales'); ?></label>
         <select name="ai_output_language" id="ai_output_language" class="widefat">
-            <option value="hu" <?php selected($ai_output_language, 'hu'); ?>>Magyar</option>
-            <option value="en" <?php selected($ai_output_language, 'en'); ?>>Angol</option>
-            <option value="de" <?php selected($ai_output_language, 'de'); ?>>Német</option>
-            <option value="fr" <?php selected($ai_output_language, 'fr'); ?>>Francia</option>
-            <option value="es" <?php selected($ai_output_language, 'es'); ?>>Spanyol</option>
+            <option value="magyar" <?php selected($ai_output_language, 'magyar'); ?>>Magyar</option>
+            <option value="angol" <?php selected($ai_output_language, 'angol'); ?>>Angol</option>
+            <option value="német" <?php selected($ai_output_language, 'német'); ?>>Német</option>
+            <option value="francia" <?php selected($ai_output_language, 'francia'); ?>>Francia</option>
+            <option value="spanyol" <?php selected($ai_output_language, 'spanyol'); ?>>Spanyol</option>
         </select>
     </p>
     <p>
