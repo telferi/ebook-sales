@@ -225,6 +225,9 @@ function generate_ai_content_callback() {
 		'generated_content' => $generated_content
 	);
 
+	// Debug: log the generated content
+	error_log("Generated content: " . $generated_content);
+
 	wp_send_json_success($response_data);
 }
 add_action('wp_ajax_generate_ai_content', 'generate_ai_content_callback');
