@@ -3,11 +3,11 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// ✅ Helyettesítés csak generáláskor, nem a mentésnél!
+// ✅ Módosított placeholder függvény
 function replace_placeholders($prompt, $writing_style, $writing_tone, $language) {
     return str_replace(
         array('<Írási stílus>', '<Írási hangnem>', '<Nyelv>'),
-        array($writing_style, $writing_tone, $output_language),
+        array($writing_style, $writing_tone, $language),
         $prompt
     );
 }
