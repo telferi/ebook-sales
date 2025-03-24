@@ -159,7 +159,7 @@ function generate_ai_content_callback() {
 	if ($file_id) {
 		$api_endpoint = 'https://api.openai.com/v1/chat/completions';
 		$request_body = array(
-			'model'    => 'gpt-4-turbo',
+			'model'    => $openai_api_model, // itt használjuk a beállított modelt
 			'messages' => array(
 				array("role" => "system", "content" => "Te egy PDF értelmező asszisztens vagy."),
 				array("role" => "user", "content" => $processed_prompt)
