@@ -86,7 +86,7 @@ function ai_content_add_meta_box() {
         __('Ai tartalom generálás', 'ebook-sales'),     // Title
         'ai_content_meta_box_callback',                 // Callback
         'ebook',                                        // Screen
-        'side',    // Changed from "normal" to "side"
+        'side',                                         // Context
         'default'                                       // Priority
     );
 }
@@ -291,7 +291,13 @@ function ai_content_meta_box_callback($post) {
             $.post(ajaxurl, data, function(response){
                 if(response.success){
                     $('#ai_content_message').html('<span style="color:green;">' + response.data.message + '</span>');
-                    // A generált tartalom megjelenik (a válaszban visszakapott prompt)
+                    // Ha a TinyMCE editor elérhető, illesszük be oda
+                    if (typeof tinymce !== 'undefined' && tinymce.get('content')) {
+                        tinymce.get('content').execCommand('mceInsertContent', false, response.data.generated_content);
+                    } else {
+                        // Egyéb esetben illesszük be a textarea végére
+                        $('#content').val($('#content').val() + response.data.generated_content);
+                    }
                 } else {
                     $('#ai_content_message').html('<span style="color:red;">' + response.data.message + '</span>');
                 }
