@@ -199,8 +199,8 @@ function generate_ai_content_callback() {
 	// Debug: logoljuk a HTTP válasz kódot és a body-t
 	$response_code = wp_remote_retrieve_response_code( $response );
 	$response_body_raw = wp_remote_retrieve_body( $response );
-	error_log("OpenAI Response Code: " . $response_code);
-	error_log("OpenAI Response Body: " . $response_body_raw);
+	//error_log("OpenAI Response Code: " . $response_code);
+	//error_log("OpenAI Response Body: " . $response_body_raw);
 
 	$response_body = json_decode( $response_body_raw, true );
 	// Módosított válasz feldolgozás:
