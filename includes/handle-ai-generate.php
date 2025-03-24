@@ -110,10 +110,12 @@ function generate_ai_content_callback() {
 					} else {
 						$ebook_text = file_get_contents( $file_path );
 					}
-					// ÚJ: PDF feltöltése az OpenAI API-ra
+					// Új: PDF feltöltése az OpenAI API-ra, timeout növelése
 					$ch = curl_init();
 					curl_setopt($ch, CURLOPT_URL, 'https://api.openai.com/v1/files');
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+					// Timeout 30 másodpercre állítása
+					curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 					$headers = array(
 						'Authorization: Bearer ' . trim(get_option('openai_api_key', ''))
 					);
@@ -188,7 +190,8 @@ function generate_ai_content_callback() {
 			'Content-Type' => 'application/json',
 			'Authorization' => 'Bearer ' . trim($openai_api_key)
 		),
-		'body' => $json_body
+		'body' => $json_body,
+		'timeout' => 30
 	));
 
 	if ( is_wp_error( $response ) ) {
