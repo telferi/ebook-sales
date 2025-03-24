@@ -70,13 +70,13 @@ class AI_Setup {
  ### PÉLDA KIMENETEK:  
  
  **[Önfejlesztő eBook esetén]**  
- 🔹 \"Szeretnéd kihozni magadból a legtöbbet? Ez az eBook lépésről lépésre megmutatja, hogyan építs sikeres szokásokat, növeld a produktivitásod és érd el a céljaid. Kezdd el még ma!\"  
+ 🔹"Szeretnéd kihozni magadból a legtöbbet? Ez az eBook lépésről lépésre megmutatja, hogyan építs sikeres szokásokat, növeld a produktivitásod és érd el a céljaid. Kezdd el még ma!"  
  
  **[Üzleti eBook esetén]**  
- 💼 \"Ismerd meg a modern üzleti stratégiák titkait! Ez az útmutató segít növelni bevételeidet, hatékonyabbá tenni vállalkozásodat és megalapozni a hosszú távú sikert.\"  
+ 💼"Ismerd meg a modern üzleti stratégiák titkait! Ez az útmutató segít növelni bevételeidet, hatékonyabbá tenni vállalkozásodat és megalapozni a hosszú távú sikert."  
  
  **[Regény esetén]**  
- 📖 \"Egy lebilincselő történet tele izgalommal és fordulatokkal! Merülj el egy világban, ahol minden döntés számít, és fedezd fel a karakterek lenyűgöző történetét.\"  
+ 📖"Egy lebilincselő történet tele izgalommal és fordulatokkal! Merülj el egy világban, ahol minden döntés számít, és fedezd fel a karakterek lenyűgöző történetét."  
  
  ### MIT NE TEGYÉL:  
  ❌ NE generálj túl hosszú vagy unalmas ismertetőt.  
