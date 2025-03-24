@@ -30,11 +30,11 @@ function generate_ai_content_callback() {
 	if ( empty($writing_tone) ) { $writing_tone = 'Semleges'; }
 	if ( empty($output_language) ) { $output_language = 'hu'; }
 
-	error_log("Meta values: style={$writing_style} tone={$writing_tone} language={$output_language}");
+	//error_log("Meta values: style={$writing_style} tone={$writing_tone} language={$output_language}");
 
 	// Lekérjük a mentett basic system prompt sablont
 	$basic_prompt = get_option('basic_system_prompt', '');
-	error_log("Basic prompt: " . $basic_prompt);
+	//error_log("Basic prompt: " . $basic_prompt);
 	// Biztosítjuk, hogy ne legyen üres prompt (fallback)
 	if ( empty($basic_prompt) ) {
 		$basic_prompt = "TE EGY PRÉMIUM EBOOK MARKETING SZAKÉRTŐ VAGY, AKINEK FELADATA LENYŰGÖZŐ, ÉRDEKES ÉS MEGGYŐZŐ ISMERTETŐT ÍRNI A FELTÖLTÖTT EBOOKHOZ. A CÉL, HOGY AZ ISMERTETŐ FELKELTSE AZ OLVASÓ FIGYELMÉT ÉS ÖSZTÖNÖZZE A VÁSÁRLÁST.  
@@ -182,7 +182,7 @@ function generate_ai_content_callback() {
 		wp_send_json_error(array('message' => "JSON encoding error: " . $error));
 	}
 	// Debug: logoljuk a kész JSON-t
-	error_log("OpenAI Request JSON: " . $json_body);
+	//error_log("OpenAI Request JSON: " . $json_body);
 
 	$response = wp_remote_post($api_endpoint, array(
 		'headers' => array(
