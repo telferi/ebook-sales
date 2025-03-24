@@ -155,7 +155,7 @@ function generate_ai_content_callback() {
 	// Győződjünk meg róla, hogy a prompt érvényesen UTF-8 kódolt
 	$processed_prompt = mb_convert_encoding($processed_prompt, 'UTF-8', 'auto');
 
-	// Új kód: Ha file_id létezik, akkor chat completions hívást végzünk
+	// Új kód: Ha file_id létezik, akkor chat completions hívást végzünk (REMOVED file_ids param)
 	if ($file_id) {
 		$api_endpoint = 'https://api.openai.com/v1/chat/completions';
 		$request_body = array(
@@ -163,8 +163,7 @@ function generate_ai_content_callback() {
 			'messages' => array(
 				array("role" => "system", "content" => "Te egy PDF értelmező asszisztens vagy."),
 				array("role" => "user", "content" => $processed_prompt)
-			),
-			'file_ids' => array($file_id)
+			)
 		);
 	} else {
 		// Ha nincs file_id, akkor a régi módon kérjük le a generált tartalmat
