@@ -1,0 +1,17 @@
+.ebook-pay-button-container {
+    text-align: center;
+    margin: 20px 0;
+}
+.ebook-pay-button {
+    background-color: #0073aa; /* kék háttér */
+    color: #ffffff; /* fehér szöveg */
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px; /* lekerekített sarkok */
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.ebook-pay-button:hover {
+    background-color: #005177;
+}
