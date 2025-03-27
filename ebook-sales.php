@@ -45,6 +45,7 @@ require_once EBOOK_SALES_PLUGIN_DIR . 'includes/save-ai-meta.php';
 // require_once EBOOK_SALES_PLUGIN_DIR . 'includes/insert-ebook-cover.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/meta-box-cover-image.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/insert-ebook-cover-frontend.php';
+require_once EBOOK_SALES_PLUGIN_DIR . 'includes/ebook-pay-button.php';
 
 // Új AI setup osztály betöltése
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ai-setup.php';
