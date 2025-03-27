@@ -52,11 +52,11 @@ class Ebook_Admin {
             null                         
         );
 
-        // 4. "Stripe Donation Settings"
+        // 4. "Stripe Settings"
         add_submenu_page(
             'ebook-sales',               
-            __('Stripe Donation Settings', 'ebook-sales'), 
-            __('Stripe Donation', 'ebook-sales'), 
+            __('Stripe Settings', 'ebook-sales'), 
+            __('Stripe', 'ebook-sales'), 
             'manage_options',            
             'stripe-donation-settings',  
             array($this, 'stripe_donation_settings_page') 
@@ -66,7 +66,7 @@ class Ebook_Admin {
     public function stripe_donation_settings_page() {
         ?>
         <div class="wrap">
-            <h1><?php echo esc_html__('Stripe Donation Settings', 'ebook-sales'); ?></h1>
+            <h1><?php echo esc_html__('Stripe Settings', 'ebook-sales'); ?></h1>
             <form method="post" action="options.php">
                 <?php
                 settings_fields('stripe_donation_settings_group');
