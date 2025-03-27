@@ -63,7 +63,12 @@ class Stripe_Donation_Settings {
     public function stripe_webhook_secret_callback() {
         $value = get_option('stripe_webhook_secret');
         echo '<input type="password" name="stripe_webhook_secret" value="' . esc_attr($value) . '" class="regular-text">
-              <p class="description">' . esc_html__('Get this from Stripe Dashboard → Developers → Webhooks', 'ebook-sales') . '</p>';
+<p class="description">' . nl2br(esc_html__(
+    '"Get this from Stripe Dashboard → Developers → Webhooks."' . "\n" .
+    '"Endpoint URL: https://your website/?ebook_stripe_webhook=1."' . "\n" .
+    '"Events: charge.refunded, charge.succeeded, checkout.session.completed, invoice.payment_succeeded, payment_intent.succeeded."',
+    'ebook-sales'
+)) . '</p>';
     }
 }
 
