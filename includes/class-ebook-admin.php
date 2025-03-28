@@ -61,6 +61,16 @@ class Ebook_Admin {
             'stripe-donation-settings',  
             array($this, 'stripe_donation_settings_page') 
         );
+
+        // 5. "Levelezés"
+        add_submenu_page(
+            'ebook-sales',
+            __('Levelezés', 'ebook-sales'),
+            __('Levelezés', 'ebook-sales'),
+            'manage_options',
+            'ebook-mailing',
+            array($this, 'render_mailing_page')
+        );
     }
 
     public function stripe_donation_settings_page() {
@@ -74,6 +84,15 @@ class Ebook_Admin {
                 submit_button();
                 ?>
             </form>
+        </div>
+        <?php
+    }
+
+    public function render_mailing_page() {
+        ?>
+        <div class="wrap">
+            <h1><?php _e('Levelezés', 'ebook-sales'); ?></h1>
+            <p><?php _e('Itt jelenik meg a levelezési funkció.', 'ebook-sales'); ?></p>
         </div>
         <?php
     }
