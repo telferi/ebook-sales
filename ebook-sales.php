@@ -46,18 +46,17 @@ require_once EBOOK_SALES_PLUGIN_DIR . 'includes/save-ai-meta.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/meta-box-cover-image.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/insert-ebook-cover-frontend.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/ebook-pay-button.php';
-require_once EBOOK_SALES_PLUGIN_DIR . 'includes/email_sender_setup.php';
 
 // Új AI setup osztály betöltése
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ai-setup.php';
 
-// Add admin submenu for Email Sender Setup
+// Add admin submenu: Ebooks → Levelezés → Beállítás
 add_action('admin_menu', 'ebook_sales_register_email_settings_menu');
 function ebook_sales_register_email_settings_menu() {
 	add_submenu_page(
-		'edit.php?post_type=ebook', // Parent menu - adjust if needed
-		'Ebooks levelezés beállítások', // Page title
-		'Levelezési beállítások',      // Menu title
+		'edit.php?post_type=ebook',              // Parent: Ebooks menu
+		'Levelezés beállítás',                   // Page title
+		'Beállítás',                             // Menu title shown under Ebooks → Levelezés
 		'manage_options',
 		'email-sender-setup',
 		'email_sender_setup_page_callback'
@@ -65,6 +64,8 @@ function ebook_sales_register_email_settings_menu() {
 }
 
 function email_sender_setup_page_callback() {
+	// Output a heading indicating the menu path
+	echo '<h2>Ebooks → Levelezés → Beállítás</h2>';
 	include EBOOK_SALES_PLUGIN_DIR . 'includes/email_sender_setup.php';
 }
 
