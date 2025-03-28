@@ -89,10 +89,47 @@ class Ebook_Admin {
     }
 
     public function render_mailing_page() {
+        $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'beallitas';
         ?>
         <div class="wrap">
             <h1><?php _e('Levelezés', 'ebook-sales'); ?></h1>
-            <p><?php _e('Itt jelenik meg a levelezési funkció.', 'ebook-sales'); ?></p>
+            <h2 class="nav-tab-wrapper">
+                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=beallitas'); ?>" class="nav-tab <?php echo ($current_tab === 'beallitas') ? 'nav-tab-active' : ''; ?>">
+                    <?php _e('Beállítás', 'ebook-sales'); ?>
+                </a>
+                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok'); ?>" class="nav-tab <?php echo ($current_tab === 'sablonok') ? 'nav-tab-active' : ''; ?>">
+                    <?php _e('Sablonok szerkesztése', 'ebook-sales'); ?>
+                </a>
+                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=egyeb'); ?>" class="nav-tab <?php echo ($current_tab === 'egyeb') ? 'nav-tab-active' : ''; ?>">
+                    <?php _e('Egyébb', 'ebook-sales'); ?>
+                </a>
+            </h2>
+            <div class="tab-content">
+                <?php
+                switch($current_tab) {
+                    case 'beallitas':
+                        ?>
+                        <h3><?php _e('Beállítás', 'ebook-sales'); ?></h3>
+                        <p><?php _e('Itt tudod konfigurálni a levelezési beállításokat.', 'ebook-sales'); ?></p>
+                        <?php
+                        break;
+                    case 'sablonok':
+                        ?>
+                        <h3><?php _e('Sablonok szerkesztése', 'ebook-sales'); ?></h3>
+                        <p><?php _e('Itt tudod szerkeszteni a levelezési sablonokat.', 'ebook-sales'); ?></p>
+                        <?php
+                        break;
+                    case 'egyeb':
+                        ?>
+                        <h3><?php _e('Egyébb', 'ebook-sales'); ?></h3>
+                        <p><?php _e('Itt találhatóak egyéb levelezési opciók.', 'ebook-sales'); ?></p>
+                        <?php
+                        break;
+                    default:
+                        echo '<p>' . __('Érvénytelen fül.', 'ebook-sales') . '</p>';
+                }
+                ?>
+            </div>
         </div>
         <?php
     }
