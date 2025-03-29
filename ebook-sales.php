@@ -50,8 +50,6 @@ require_once EBOOK_SALES_PLUGIN_DIR . 'includes/ebook-pay-button.php';
 // Új AI setup osztály betöltése
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ai-setup.php';
 
-
-
 // Aktiválás/deaktiválás
 register_activation_hook(__FILE__, 'ebook_sales_activate');
 function ebook_sales_activate() {
@@ -74,4 +72,3 @@ function ebook_sales_deactivate(){
 add_action('plugins_loaded', function() {
     load_plugin_textdomain('ebook-sales', false, dirname(plugin_basename(__FILE__)) . '/languages/');
 });
-?>
