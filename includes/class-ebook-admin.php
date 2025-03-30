@@ -7,6 +7,24 @@ class Ebook_Admin {
 
     public function __construct() {
         add_action('admin_menu', array($this, 'add_ebook_menu'));
+        
+        // Betöltjük a template kezelő osztályt
+        require_once plugin_dir_path(__FILE__) . 'class-ebook-mail-templates.php';
+        
+        // Admin asset-ek betöltése
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
+    }
+    
+    public function enqueue_admin_scripts($hook) {
+        // Csak a levelezés oldalon töltjük be a szkripteket
+        if (strpos($hook, 'ebook-mailing') !== false) {
+            wp_enqueue_script('ebook-mail-templates', plugin_dir_url(__FILE__) . '../assets/js/ebook-mail-templates.js', array('jquery'), '1.0.0', true);
+            wp_localize_script('ebook-mail-templates', 'ebook_mail_vars', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('ebook_mail_nonce'),
+                'delete_confirm' => __('Biztosan törölni szeretnéd ezt a sablont?', 'ebook-sales')
+            ));
+        }
     }
 
     public function add_ebook_menu() {
@@ -209,10 +227,74 @@ class Ebook_Admin {
                         <?php
                         break;
                     case 'sablonok':
-                        ?>
-                        <h3><?php _e('Sablonok szerkesztése', 'ebook-sales'); ?></h3>
-                        <p><?php _e('Itt tudod szerkeszteni a levelezési sablonokat.', 'ebook-sales'); ?></p>
-                        <?php
+                        $template_id = isset($_GET['template_id']) ? intval($_GET['template_id']) : 0;
+                        $action = isset($_GET['action']) ? sanitize_text_field($_GET['action']) : '';
+                        
+                        if ($action === 'edit' && $template_id > 0) {
+                            // Sablon szerkesztése
+                            $this->render_edit_template_form($template_id);
+                        } elseif ($action === 'new') {
+                            // Új sablon létrehozása
+                            $this->render_edit_template_form(0);
+                        } elseif ($action === 'view' && $template_id > 0) {
+                            // Sablon megtekintése
+                            $this->render_view_template($template_id);
+                        } else {
+                            // Sablonok listázása
+                            ?>
+                            <h3><?php _e('Sablonok szerkesztése', 'ebook-sales'); ?></h3>
+                            <div class="tablenav top">
+                                <div class="alignleft actions">
+                                    <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok&action=new'); ?>" class="button button-primary">
+                                        <?php _e('Új levél sablon', 'ebook-sales'); ?>
+                                    </a>
+                                </div>
+                                <br class="clear">
+                            </div>
+                            
+                            <?php
+                            // Template-ek listázása
+                            $mail_templates = Ebook_Mail_Templates::get_mail_templates();
+                            
+                            if (empty($mail_templates)) {
+                                echo '<p>' . __('Még nincsenek létrehozott levélsablonok.', 'ebook-sales') . '</p>';
+                            } else {
+                                ?>
+                                <table class="wp-list-table widefat fixed striped">
+                                    <thead>
+                                        <tr>
+                                            <th><?php _e('ID', 'ebook-sales'); ?></th>
+                                            <th><?php _e('Neve', 'ebook-sales'); ?></th>
+                                            <th><?php _e('Subject', 'ebook-sales'); ?></th>
+                                            <th><?php _e('Létrehozás dátuma', 'ebook-sales'); ?></th>
+                                            <th><?php _e('Műveletek', 'ebook-sales'); ?></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    <?php foreach ($mail_templates as $template) : ?>
+                                        <tr>
+                                            <td><?php echo esc_html($template->id); ?></td>
+                                            <td><?php echo esc_html($template->name); ?></td>
+                                            <td><?php echo esc_html($template->subject); ?></td>
+                                            <td><?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($template->created_at))); ?></td>
+                                            <td>
+                                                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok&action=edit&template_id=' . $template->id); ?>" class="button button-small">
+                                                    <?php _e('Szerkesztés', 'ebook-sales'); ?>
+                                                </a>
+                                                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok&action=view&template_id=' . $template->id); ?>" class="button button-small">
+                                                    <?php _e('Megtekintés', 'ebook-sales'); ?>
+                                                </a>
+                                                <a href="#" class="button button-small delete-template" data-id="<?php echo $template->id; ?>">
+                                                    <?php _e('Törlés', 'ebook-sales'); ?>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                                <?php
+                            }
+                        }
                         break;
                     case 'egyeb':
                         ?>
@@ -226,6 +308,157 @@ class Ebook_Admin {
                 ?>
             </div>
         </div>
+        <?php
+    }
+    
+    /**
+     * Sablon szerkesztő űrlap megjelenítése
+     */
+    private function render_edit_template_form($template_id = 0) {
+        $template = new stdClass();
+        $title = __('Új levél sablon létrehozása', 'ebook-sales');
+        $button_text = __('Létrehozás', 'ebook-sales');
+        
+        if ($template_id > 0) {
+            $template = Ebook_Mail_Templates::get_mail_template_by_id($template_id);
+            if (!$template) {
+                echo '<div class="notice notice-error"><p>' . __('A sablon nem található!', 'ebook-sales') . '</p></div>';
+                return;
+            }
+            $title = __('Levél sablon szerkesztése', 'ebook-sales');
+            $button_text = __('Frissítés', 'ebook-sales');
+        } else {
+            $template->id = 0;
+            $template->name = '';
+            $template->subject = '';
+            $template->content = '';
+        }
+    
+        // Form feldolgozása
+        if (isset($_POST['ebook_mail_template_submit'])) {
+            if (check_admin_referer('ebook_mail_template_nonce', 'ebook_mail_template_nonce')) {
+                $template_data = array(
+                    'name' => sanitize_text_field($_POST['template_name']),
+                    'subject' => sanitize_text_field($_POST['template_subject']),
+                    'content' => wp_kses_post($_POST['template_content'])
+                );
+                
+                $errors = array();
+                if (empty($template_data['name'])) {
+                    $errors[] = __('A sablon neve nem lehet üres!', 'ebook-sales');
+                }
+                if (empty($template_data['subject'])) {
+                    $errors[] = __('A tárgy mező nem lehet üres!', 'ebook-sales');
+                }
+                
+                if (empty($errors)) {
+                    if ($template_id > 0) {
+                        Ebook_Mail_Templates::update_mail_template($template_id, $template_data);
+                        $message = __('A sablon sikeresen frissítve!', 'ebook-sales');
+                    } else {
+                        $template_id = Ebook_Mail_Templates::create_mail_template($template_data);
+                        $message = __('Az új sablon sikeresen létrehozva!', 'ebook-sales');
+                    }
+                    
+                    echo '<div class="notice notice-success is-dismissible"><p>' . $message . '</p></div>';
+                    $template = Ebook_Mail_Templates::get_mail_template_by_id($template_id);
+                } else {
+                    echo '<div class="notice notice-error"><p>' . implode('<br>', $errors) . '</p></div>';
+                }
+            }
+        }
+        
+        ?>
+        <h3><?php echo $title; ?></h3>
+        <form method="post" action="">
+            <?php wp_nonce_field('ebook_mail_template_nonce', 'ebook_mail_template_nonce'); ?>
+            <input type="hidden" name="template_id" value="<?php echo esc_attr($template_id); ?>">
+            
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><label for="template_name"><?php _e('Sablon neve', 'ebook-sales'); ?> <span style="color: red;">*</span></label></th>
+                    <td>
+                        <input type="text" id="template_name" name="template_name" value="<?php echo esc_attr($template->name); ?>" class="regular-text" required>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="template_subject"><?php _e('Tárgy', 'ebook-sales'); ?> <span style="color: red;">*</span></label></th>
+                    <td>
+                        <input type="text" id="template_subject" name="template_subject" value="<?php echo esc_attr($template->subject); ?>" class="regular-text" required>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="template_content"><?php _e('Tartalom', 'ebook-sales'); ?></label></th>
+                    <td>
+                        <?php
+                        wp_editor($template->content, 'template_content', array(
+                            'textarea_name' => 'template_content',
+                            'media_buttons' => true,
+                            'textarea_rows' => 15
+                        ));
+                        ?>
+                    </td>
+                </tr>
+            </table>
+            
+            <p>
+                <input type="submit" name="ebook_mail_template_submit" class="button button-primary" value="<?php echo $button_text; ?>">
+                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok'); ?>" class="button"><?php _e('Vissza', 'ebook-sales'); ?></a>
+            </p>
+        </form>
+        <?php
+    }
+    
+    /**
+     * Sablon megtekintése
+     */
+    private function render_view_template($template_id) {
+        $template = Ebook_Mail_Templates::get_mail_template_by_id($template_id);
+        if (!$template) {
+            echo '<div class="notice notice-error"><p>' . __('A sablon nem található!', 'ebook-sales') . '</p></div>';
+            return;
+        }
+        
+        ?>
+        <h3><?php echo esc_html($template->name); ?> <?php _e('megtekintése', 'ebook-sales'); ?></h3>
+        
+        <div class="template-view-container">
+            <div class="template-meta">
+                <p><strong><?php _e('ID', 'ebook-sales'); ?>:</strong> <?php echo esc_html($template->id); ?></p>
+                <p><strong><?php _e('Név', 'ebook-sales'); ?>:</strong> <?php echo esc_html($template->name); ?></p>
+                <p><strong><?php _e('Tárgy', 'ebook-sales'); ?>:</strong> <?php echo esc_html($template->subject); ?></p>
+                <p><strong><?php _e('Létrehozva', 'ebook-sales'); ?>:</strong> <?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($template->created_at))); ?></p>
+            </div>
+            
+            <div class="template-content">
+                <h4><?php _e('Sablon tartalma', 'ebook-sales'); ?>:</h4>
+                <div class="template-content-preview">
+                    <?php echo wpautop($template->content); ?>
+                </div>
+            </div>
+            
+            <p>
+                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok&action=edit&template_id=' . $template->id); ?>" class="button button-primary">
+                    <?php _e('Szerkesztés', 'ebook-sales'); ?>
+                </a>
+                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok'); ?>" class="button">
+                    <?php _e('Vissza a listához', 'ebook-sales'); ?>
+                </a>
+            </p>
+        </div>
+        
+        <style>
+            .template-content-preview {
+                background: #fff;
+                border: 1px solid #ccd0d4;
+                padding: 20px;
+                margin-top: 10px;
+            }
+            
+            .template-meta {
+                margin-bottom: 20px;
+            }
+        </style>
         <?php
     }
 }
