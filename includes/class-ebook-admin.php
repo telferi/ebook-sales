@@ -90,6 +90,16 @@ class Ebook_Admin {
 
     public function render_mailing_page() {
         $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'beallitas';
+        
+        // Form adatok feldolgozása
+        if (isset($_POST['ebook_mail_settings_submit']) && $current_tab === 'beallitas') {
+            if (check_admin_referer('ebook_mail_settings_nonce', 'ebook_mail_settings_nonce')) {
+                $hostname = sanitize_text_field($_POST['ebook_mail_hostname']);
+                update_option('ebook_mail_hostname', $hostname);
+                echo '<div class="notice notice-success is-dismissible"><p>' . __('Beállítások sikeresen mentve!', 'ebook-sales') . '</p></div>';
+            }
+        }
+        
         ?>
         <div class="wrap">
             <h1><?php _e('Levelezés', 'ebook-sales'); ?></h1>
@@ -108,9 +118,23 @@ class Ebook_Admin {
                 <?php
                 switch($current_tab) {
                     case 'beallitas':
+                        $hostname = get_option('ebook_mail_hostname', '');
                         ?>
                         <h3><?php _e('Beállítás', 'ebook-sales'); ?></h3>
-                        <p><?php _e('Itt tudod konfigurálni a levelezési beállításokat.', 'ebook-sales'); ?></p>
+                        <form method="post" action="">
+                            <?php wp_nonce_field('ebook_mail_settings_nonce', 'ebook_mail_settings_nonce'); ?>
+                            
+                            <table class="form-table">
+                                <tr>
+                                    <th scope="row"><label for="ebook_mail_hostname"><?php _e('Host name', 'ebook-sales'); ?></label></th>
+                                    <td>
+                                        <input type="text" id="ebook_mail_hostname" name="ebook_mail_hostname" value="<?php echo esc_attr($hostname); ?>" class="regular-text">
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <?php submit_button(__('Mentés', 'ebook-sales'), 'primary', 'ebook_mail_settings_submit'); ?>
+                        </form>
                         <?php
                         break;
                     case 'sablonok':
