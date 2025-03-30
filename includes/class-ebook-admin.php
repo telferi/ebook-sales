@@ -170,12 +170,14 @@ class Ebook_Admin {
                                     <th scope="row"><label for="ebook_mail_hostname"><?php _e('Host name', 'ebook-sales'); ?> <span class="required">*</span></label></th>
                                     <td>
                                         <input type="text" id="ebook_mail_hostname" name="ebook_mail_hostname" value="<?php echo esc_attr($hostname); ?>" class="regular-text" required>
+                                        <p class="description"><?php _e('A levelező szerver host neve.', 'ebook-sales'); ?></p>
                                     </td>
                                 </tr>
                                 <tr>
                                     <th scope="row"><label for="ebook_mail_sender_email"><?php _e('Sender email address', 'ebook-sales'); ?> <span class="required">*</span></label></th>
                                     <td>
                                         <input type="email" id="ebook_mail_sender_email" name="ebook_mail_sender_email" value="<?php echo esc_attr($sender_email); ?>" class="regular-text" required>
+                                        <p class="description"><?php _e('A kiküldött leveleken ez az email cím szerepel majd.', 'ebook-sales'); ?></p>
                                     </td>
                                 </tr>
                                 <tr>
