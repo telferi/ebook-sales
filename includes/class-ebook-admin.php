@@ -110,6 +110,17 @@ class Ebook_Admin {
                     }
                 }
                 
+                // Ellenőrizzük, hogy a port értékek nem negatívak
+                if (isset($_POST['ebook_mail_imap_port']) && intval($_POST['ebook_mail_imap_port']) < 0) {
+                    $errors[] = __('Az IMAP Port nem lehet negatív szám.', 'ebook-sales');
+                }
+                if (isset($_POST['ebook_mail_pop3_port']) && intval($_POST['ebook_mail_pop3_port']) < 0) {
+                    $errors[] = __('A POP3 Port nem lehet negatív szám.', 'ebook-sales');
+                }
+                if (isset($_POST['ebook_mail_smtp_port']) && intval($_POST['ebook_mail_smtp_port']) < 0) {
+                    $errors[] = __('Az SMTP Port nem lehet negatív szám.', 'ebook-sales');
+                }
+                
                 if (empty($errors)) {
                     // Mentés, ha nincs hiba
                     update_option('ebook_mail_hostname', sanitize_text_field($_POST['ebook_mail_hostname']));
@@ -146,9 +157,9 @@ class Ebook_Admin {
                     case 'beallitas':
                         $hostname = get_option('ebook_mail_hostname', '');
                         $sender_email = get_option('ebook_mail_sender_email', '');
-                        $imap_port = get_option('ebook_mail_imap_port', '');
-                        $pop3_port = get_option('ebook_mail_pop3_port', '');
-                        $smtp_port = get_option('ebook_mail_smtp_port', '');
+                        $imap_port = get_option('ebook_mail_imap_port', '993');
+                        $pop3_port = get_option('ebook_mail_pop3_port', '995');
+                        $smtp_port = get_option('ebook_mail_smtp_port', '456');
                         ?>
                         <h3><?php _e('Beállítás', 'ebook-sales'); ?></h3>
                         <form method="post" action="">
