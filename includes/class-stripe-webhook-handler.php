@@ -17,11 +17,18 @@ class Stripe_Webhook_Handler {
         $payload = @file_get_contents('php://input');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
         $webhook_secret = get_option('stripe_webhook_secret');
+        
+        // Adatok mentése tesztelési célból
+        $this->save_webhook_data_to_file($payload, $sig_header);
 
         try {
             $event = \Stripe\Webhook::constructEvent($payload, $sig_header, $webhook_secret);
         } catch (\Exception $e) {
             error_log('Stripe Webhook Error: ' . $e->getMessage());
+            
+            // A hiba adatainak mentése is
+            $this->save_webhook_data_to_file('HIBA: ' . $e->getMessage(), '', 'error');
+            
             http_response_code(403);
             exit;
         }
@@ -36,6 +43,56 @@ class Stripe_Webhook_Handler {
 
         http_response_code(200);
         exit;
+    }
+    
+    /**
+     * Menti a webhook adatokat egy szövegfájlba tesztelési célból
+     * 
+     * @param string $payload A webhook által küldött adatok
+     * @param string $signature A webhook aláírás
+     * @param string $prefix Fájlnév előtag (opcionális)
+     * @return bool Sikeres mentés esetén true, egyébként false
+     */
+    private function save_webhook_data_to_file($payload, $signature = '', $prefix = '') {
+        try {
+            // Fájl elérési útja
+            $uploads_dir = wp_upload_dir();
+            $log_dir = $uploads_dir['basedir'] . '/stripe-logs';
+            
+            // Létrehozzuk a mappát, ha nem létezik
+            if (!file_exists($log_dir)) {
+                mkdir($log_dir, 0755, true);
+            }
+            
+            // Fájl neve időbélyeggel
+            $timestamp = date('Y-m-d_H-i-s');
+            if (!empty($prefix)) {
+                $timestamp = $prefix . '_' . $timestamp;
+            }
+            $filename = $log_dir . '/ment-stripe_' . $timestamp . '.txt';
+            
+            // Összeállítjuk a mentendő adatokat
+            $data = "=== STRIPE WEBHOOK ADAT ===\n";
+            $data .= "Időpont: " . date('Y-m-d H:i:s') . "\n";
+            $data .= "IP-cím: " . $_SERVER['REMOTE_ADDR'] . "\n\n";
+            
+            if (!empty($signature)) {
+                $data .= "=== SIGNATURE ===\n" . $signature . "\n\n";
+            }
+            
+            $data .= "=== PAYLOAD ===\n" . $payload . "\n";
+            
+            // Fájl írása
+            file_put_contents($filename, $data);
+            
+            // Sikeres mentés naplózása
+            error_log('Stripe webhook adatok mentése sikeres: ' . $filename);
+            
+            return true;
+        } catch (\Exception $e) {
+            error_log('Hiba a Stripe webhook adatok mentése során: ' . $e->getMessage());
+            return false;
+        }
     }
 
     private function save_payment_data($charge, $table) {
