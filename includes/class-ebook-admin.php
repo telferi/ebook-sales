@@ -94,9 +94,35 @@ class Ebook_Admin {
         // Form adatok feldolgozása
         if (isset($_POST['ebook_mail_settings_submit']) && $current_tab === 'beallitas') {
             if (check_admin_referer('ebook_mail_settings_nonce', 'ebook_mail_settings_nonce')) {
-                $hostname = sanitize_text_field($_POST['ebook_mail_hostname']);
-                update_option('ebook_mail_hostname', $hostname);
-                echo '<div class="notice notice-success is-dismissible"><p>' . __('Beállítások sikeresen mentve!', 'ebook-sales') . '</p></div>';
+                // Ellenőrizzük, hogy minden kötelező mező ki van-e töltve
+                $required_fields = [
+                    'ebook_mail_hostname' => __('Host name', 'ebook-sales'),
+                    'ebook_mail_sender_email' => __('Sender email address', 'ebook-sales'),
+                    'ebook_mail_imap_port' => __('IMAP Port', 'ebook-sales'),
+                    'ebook_mail_pop3_port' => __('POP3 Port', 'ebook-sales'),
+                    'ebook_mail_smtp_port' => __('SMTP Port', 'ebook-sales')
+                ];
+                
+                $errors = [];
+                foreach ($required_fields as $field => $label) {
+                    if (empty($_POST[$field])) {
+                        $errors[] = sprintf(__('A(z) %s mező kitöltése kötelező.', 'ebook-sales'), $label);
+                    }
+                }
+                
+                if (empty($errors)) {
+                    // Mentés, ha nincs hiba
+                    update_option('ebook_mail_hostname', sanitize_text_field($_POST['ebook_mail_hostname']));
+                    update_option('ebook_mail_sender_email', sanitize_email($_POST['ebook_mail_sender_email']));
+                    update_option('ebook_mail_imap_port', absint($_POST['ebook_mail_imap_port']));
+                    update_option('ebook_mail_pop3_port', absint($_POST['ebook_mail_pop3_port']));
+                    update_option('ebook_mail_smtp_port', absint($_POST['ebook_mail_smtp_port']));
+                    
+                    echo '<div class="notice notice-success is-dismissible"><p>' . __('Beállítások sikeresen mentve!', 'ebook-sales') . '</p></div>';
+                } else {
+                    // Hibaüzenetek megjelenítése
+                    echo '<div class="notice notice-error is-dismissible"><p>' . implode('<br>', $errors) . '</p></div>';
+                }
             }
         }
         
@@ -119,6 +145,10 @@ class Ebook_Admin {
                 switch($current_tab) {
                     case 'beallitas':
                         $hostname = get_option('ebook_mail_hostname', '');
+                        $sender_email = get_option('ebook_mail_sender_email', '');
+                        $imap_port = get_option('ebook_mail_imap_port', '');
+                        $pop3_port = get_option('ebook_mail_pop3_port', '');
+                        $smtp_port = get_option('ebook_mail_smtp_port', '');
                         ?>
                         <h3><?php _e('Beállítás', 'ebook-sales'); ?></h3>
                         <form method="post" action="">
@@ -126,12 +156,40 @@ class Ebook_Admin {
                             
                             <table class="form-table">
                                 <tr>
-                                    <th scope="row"><label for="ebook_mail_hostname"><?php _e('Host name', 'ebook-sales'); ?></label></th>
+                                    <th scope="row"><label for="ebook_mail_hostname"><?php _e('Host name', 'ebook-sales'); ?> <span class="required">*</span></label></th>
                                     <td>
-                                        <input type="text" id="ebook_mail_hostname" name="ebook_mail_hostname" value="<?php echo esc_attr($hostname); ?>" class="regular-text">
+                                        <input type="text" id="ebook_mail_hostname" name="ebook_mail_hostname" value="<?php echo esc_attr($hostname); ?>" class="regular-text" required>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><label for="ebook_mail_sender_email"><?php _e('Sender email address', 'ebook-sales'); ?> <span class="required">*</span></label></th>
+                                    <td>
+                                        <input type="email" id="ebook_mail_sender_email" name="ebook_mail_sender_email" value="<?php echo esc_attr($sender_email); ?>" class="regular-text" required>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><label for="ebook_mail_imap_port"><?php _e('IMAP Port', 'ebook-sales'); ?> <span class="required">*</span></label></th>
+                                    <td>
+                                        <input type="number" id="ebook_mail_imap_port" name="ebook_mail_imap_port" value="<?php echo esc_attr($imap_port); ?>" class="small-text" required>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><label for="ebook_mail_pop3_port"><?php _e('POP3 Port', 'ebook-sales'); ?> <span class="required">*</span></label></th>
+                                    <td>
+                                        <input type="number" id="ebook_mail_pop3_port" name="ebook_mail_pop3_port" value="<?php echo esc_attr($pop3_port); ?>" class="small-text" required>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><label for="ebook_mail_smtp_port"><?php _e('SMTP Port', 'ebook-sales'); ?> <span class="required">*</span></label></th>
+                                    <td>
+                                        <input type="number" id="ebook_mail_smtp_port" name="ebook_mail_smtp_port" value="<?php echo esc_attr($smtp_port); ?>" class="small-text" required>
                                     </td>
                                 </tr>
                             </table>
+
+                            <style>
+                                .required { color: red; }
+                            </style>
                             
                             <?php submit_button(__('Mentés', 'ebook-sales'), 'primary', 'ebook_mail_settings_submit'); ?>
                         </form>
