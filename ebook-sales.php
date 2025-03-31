@@ -55,11 +55,17 @@ function ebook_sales_activate() {
     // Betöltjük a custom post típus regisztrációját végző fájlt és példányosítjuk az osztályt.
     require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-post-type.php';
     $ebook_post_type = new Ebook_Post_Type();
+    
     // Regisztráljuk a post típust, így a rewrite szabályok helyesek lesznek.
     $ebook_post_type->register_ebook_post_type();
     
     flush_rewrite_rules();
     Payment_Database::create_table();
+    
+    // Workflow tábla létrehozása aktiváláskor
+    require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-workflow.php';
+    $workflow = new Ebook_Workflow();
+    $workflow->create_workflow_table();
 }
 
 register_deactivation_hook(__FILE__, 'ebook_sales_deactivate');

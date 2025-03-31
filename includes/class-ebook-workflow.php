@@ -20,7 +20,10 @@ class Ebook_Workflow {
         global $wpdb;
         $this->table_name = $wpdb->prefix . 'ebook_workflows';
 
+        // Tábla létrehozása vagy admin_init hookon, vagy közvetlen konstruktor híváskor
         add_action('admin_init', array($this, 'create_workflow_table'));
+        $this->create_workflow_table(); // Azonnali létrehozás a biztonság kedvéért
+        
         add_action('wp_ajax_save_ebook_workflow', array($this, 'save_workflow'));
         add_action('wp_ajax_delete_ebook_workflow', array($this, 'delete_workflow'));
     }
