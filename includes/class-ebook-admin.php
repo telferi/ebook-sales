@@ -297,6 +297,9 @@ class Ebook_Admin {
                         }
                         break;
                     case 'workflow':
+                        $workflow = new Ebook_Workflow();
+                        $workflow->render_admin_page();
+                        break;
                         ?>
                         <h3><?php _e('Workflow', 'ebook-sales'); ?></h3>
                         <p><?php _e('Itt állíthatók be az automatizált munkafolyamatok.', 'ebook-sales'); ?></p>
