@@ -48,7 +48,7 @@ require_once EBOOK_SALES_PLUGIN_DIR . 'includes/insert-ebook-cover-frontend.php'
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/ebook-pay-button.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ai-setup.php';
 require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-mail-templates.php';
-
+require_once EBOOK_SALES_PLUGIN_DIR . 'includes/class-ebook-workflow.php';
 // Aktiválás/deaktiválás
 register_activation_hook(__FILE__, 'ebook_sales_activate');
 function ebook_sales_activate() {
