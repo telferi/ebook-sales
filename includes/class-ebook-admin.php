@@ -300,13 +300,8 @@ class Ebook_Admin {
                         $workflow = new Ebook_Workflow();
                         $workflow->render_admin_page();
                         break;
-                        ?>
-                        <h3><?php _e('Workflow', 'ebook-sales'); ?></h3>
-                        <p><?php _e('Itt állíthatók be az automatizált munkafolyamatok.', 'ebook-sales'); ?></p>
-                        <?php
-                        break;
-                    default:
-                        echo '<p>' . __('Érvénytelen fül.', 'ebook-sales') . '</p>';
+                    default:t:
+                        echo '<p>' . __('Érvénytelen fül.', 'ebook-sales') . '</p>';') . '</p>';
                 }
                 ?>
             </div>
@@ -315,89 +310,89 @@ class Ebook_Admin {
     }
     
     /**
-     * Sablon szerkesztő űrlap megjelenítése
+     * Sablon szerkesztő űrlap megjelenítéseszerkesztő űrlap megjelenítése
      */
-    private function render_edit_template_form($template_id = 0) {
-        $template = new stdClass();
-        $title = __('Új levél sablon létrehozása', 'ebook-sales');
-        $button_text = __('Létrehozás', 'ebook-sales');
-        
+    private function render_edit_template_form($template_id = 0) {rivate function render_edit_template_form($template_id = 0) {
+        $template = new stdClass();    $template = new stdClass();
+        $title = __('Új levél sablon létrehozása', 'ebook-sales'); $title = __('Új levél sablon létrehozása', 'ebook-sales');
+        $button_text = __('Létrehozás', 'ebook-sales');ok-sales');
+         
         if ($template_id > 0) {
-            $template = Ebook_Mail_Templates::get_mail_template_by_id($template_id);
+            $template = Ebook_Mail_Templates::get_mail_template_by_id($template_id);Templates::get_mail_template_by_id($template_id);
             if (!$template) {
-                echo '<div class="notice notice-error"><p>' . __('A sablon nem található!', 'ebook-sales') . '</p></div>';
-                return;
+                echo '<div class="notice notice-error"><p>' . __('A sablon nem található!', 'ebook-sales') . '</p></div>';<p>' . __('A sablon nem található!', 'ebook-sales') . '</p></div>';
+                return;        return;
             }
             $title = __('Levél sablon szerkesztése', 'ebook-sales');
-            $button_text = __('Frissítés', 'ebook-sales');
+            $button_text = __('Frissítés', 'ebook-sales');('Frissítés', 'ebook-sales');
         } else {
-            $template->id = 0;
-            $template->name = '';
+            $template->id = 0;id = 0;
+            $template->name = '';template->name = '';
             $template->subject = '';
             $template->content = '';
         }
     
         // Form feldolgozása
-        if (isset($_POST['ebook_mail_template_submit'])) {
-            if (check_admin_referer('ebook_mail_template_nonce', 'ebook_mail_template_nonce')) {
-                $template_data = array(
-                    'name' => sanitize_text_field($_POST['template_name']),
-                    'subject' => sanitize_text_field($_POST['template_subject']),
-                    'content' => wp_kses_post($_POST['template_content'])
+        if (isset($_POST['ebook_mail_template_submit'])) {_template_submit'])) {
+            if (check_admin_referer('ebook_mail_template_nonce', 'ebook_mail_template_nonce')) {'ebook_mail_template_nonce', 'ebook_mail_template_nonce')) {
+                $template_data = array(       $template_data = array(
+                    'name' => sanitize_text_field($_POST['template_name']),                'name' => sanitize_text_field($_POST['template_name']),
+                    'subject' => sanitize_text_field($_POST['template_subject']),' => sanitize_text_field($_POST['template_subject']),
+                    'content' => wp_kses_post($_POST['template_content'])late_content'])
                 );
                 
                 $errors = array();
                 if (empty($template_data['name'])) {
-                    $errors[] = __('A sablon neve nem lehet üres!', 'ebook-sales');
+                    $errors[] = __('A sablon neve nem lehet üres!', 'ebook-sales');k-sales');
                 }
-                if (empty($template_data['subject'])) {
-                    $errors[] = __('A tárgy mező nem lehet üres!', 'ebook-sales');
+                if (empty($template_data['subject'])) {if (empty($template_data['subject'])) {
+                    $errors[] = __('A tárgy mező nem lehet üres!', 'ebook-sales');('A tárgy mező nem lehet üres!', 'ebook-sales');
                 }
                 
-                if (empty($errors)) {
+                if (empty($errors)) {f (empty($errors)) {
                     if ($template_id > 0) {
-                        Ebook_Mail_Templates::update_mail_template($template_id, $template_data);
-                        $message = __('A sablon sikeresen frissítve!', 'ebook-sales');
-                    } else {
-                        $template_id = Ebook_Mail_Templates::create_mail_template($template_data);
-                        $message = __('Az új sablon sikeresen létrehozva!', 'ebook-sales');
+                        Ebook_Mail_Templates::update_mail_template($template_id, $template_data);template_data);
+                        $message = __('A sablon sikeresen frissítve!', 'ebook-sales');       $message = __('A sablon sikeresen frissítve!', 'ebook-sales');
+                    } else {    } else {
+                        $template_id = Ebook_Mail_Templates::create_mail_template($template_data);= Ebook_Mail_Templates::create_mail_template($template_data);
+                        $message = __('Az új sablon sikeresen létrehozva!', 'ebook-sales');j sablon sikeresen létrehozva!', 'ebook-sales');
                     }
                     
-                    echo '<div class="notice notice-success is-dismissible"><p>' . $message . '</p></div>';
+                    echo '<div class="notice notice-success is-dismissible"><p>' . $message . '</p></div>';iv class="notice notice-success is-dismissible"><p>' . $message . '</p></div>';
                     $template = Ebook_Mail_Templates::get_mail_template_by_id($template_id);
                 } else {
-                    echo '<div class="notice notice-error"><p>' . implode('<br>', $errors) . '</p></div>';
+                    echo '<div class="notice notice-error"><p>' . implode('<br>', $errors) . '</p></div>';cho '<div class="notice notice-error"><p>' . implode('<br>', $errors) . '</p></div>';
                 }
             }
         }
         
         ?>
-        <h3><?php echo $title; ?></h3>
-        <form method="post" action="">
-            <?php wp_nonce_field('ebook_mail_template_nonce', 'ebook_mail_template_nonce'); ?>
-            <input type="hidden" name="template_id" value="<?php echo esc_attr($template_id); ?>">
-            
+        <h3><?php echo $title; ?></h3> echo $title; ?></h3>
+        <form method="post" action=""> method="post" action="">
+            <?php wp_nonce_field('ebook_mail_template_nonce', 'ebook_mail_template_nonce'); ?>   <?php wp_nonce_field('ebook_mail_template_nonce', 'ebook_mail_template_nonce'); ?>
+            <input type="hidden" name="template_id" value="<?php echo esc_attr($template_id); ?>">    <input type="hidden" name="template_id" value="<?php echo esc_attr($template_id); ?>">
+              
             <table class="form-table">
                 <tr>
-                    <th scope="row"><label for="template_name"><?php _e('Sablon neve', 'ebook-sales'); ?> <span style="color: red;">*</span></label></th>
+                    <th scope="row"><label for="template_name"><?php _e('Sablon neve', 'ebook-sales'); ?> <span style="color: red;">*</span></label></th>sales'); ?> <span style="color: red;">*</span></label></th>
                     <td>
-                        <input type="text" id="template_name" name="template_name" value="<?php echo esc_attr($template->name); ?>" class="regular-text" required>
+                        <input type="text" id="template_name" name="template_name" value="<?php echo esc_attr($template->name); ?>" class="regular-text" required>            <input type="text" id="template_name" name="template_name" value="<?php echo esc_attr($template->name); ?>" class="regular-text" required>
                     </td>
-                </tr>
+                </tr>>
                 <tr>
-                    <th scope="row"><label for="template_subject"><?php _e('Tárgy', 'ebook-sales'); ?> <span style="color: red;">*</span></label></th>
+                    <th scope="row"><label for="template_subject"><?php _e('Tárgy', 'ebook-sales'); ?> <span style="color: red;">*</span></label></th>scope="row"><label for="template_subject"><?php _e('Tárgy', 'ebook-sales'); ?> <span style="color: red;">*</span></label></th>
                     <td>
-                        <input type="text" id="template_subject" name="template_subject" value="<?php echo esc_attr($template->subject); ?>" class="regular-text" required>
-                    </td>
-                </tr>
+                        <input type="text" id="template_subject" name="template_subject" value="<?php echo esc_attr($template->subject); ?>" class="regular-text" required>input type="text" id="template_subject" name="template_subject" value="<?php echo esc_attr($template->subject); ?>" class="regular-text" required>
+                    </td>/td>
+                </tr>>
                 <tr>
-                    <th scope="row"><label for="template_content"><?php _e('Tartalom', 'ebook-sales'); ?></label></th>
+                    <th scope="row"><label for="template_content"><?php _e('Tartalom', 'ebook-sales'); ?></label></th>scope="row"><label for="template_content"><?php _e('Tartalom', 'ebook-sales'); ?></label></th>
                     <td>
-                        <?php
-                        wp_editor($template->content, 'template_content', array(
-                            'textarea_name' => 'template_content',
+                        <?php?php
+                        wp_editor($template->content, 'template_content', array(   wp_editor($template->content, 'template_content', array(
+                            'textarea_name' => 'template_content',        'textarea_name' => 'template_content',
                             'media_buttons' => true,
-                            'textarea_rows' => 15
+                            'textarea_rows' => 15    'textarea_rows' => 15
                         ));
                         ?>
                     </td>
@@ -405,65 +400,65 @@ class Ebook_Admin {
             </table>
             
             <p>
-                <input type="submit" name="ebook_mail_template_submit" class="button button-primary" value="<?php echo $button_text; ?>">
-                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok'); ?>" class="button"><?php _e('Vissza', 'ebook-sales'); ?></a>
+                <input type="submit" name="ebook_mail_template_submit" class="button button-primary" value="<?php echo $button_text; ?>">pe="submit" name="ebook_mail_template_submit" class="button button-primary" value="<?php echo $button_text; ?>">
+                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok'); ?>" class="button"><?php _e('Vissza', 'ebook-sales'); ?></a>ef="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok'); ?>" class="button"><?php _e('Vissza', 'ebook-sales'); ?></a>
             </p>
-        </form>
+        </form>rm>
         <?php
     }
     
     /**
-     * Sablon megtekintése
+     * Sablon megtekintéseegtekintése
      */
-    private function render_view_template($template_id) {
-        $template = Ebook_Mail_Templates::get_mail_template_by_id($template_id);
-        if (!$template) {
-            echo '<div class="notice notice-error"><p>' . __('A sablon nem található!', 'ebook-sales') . '</p></div>';
-            return;
+    private function render_view_template($template_id) {rivate function render_view_template($template_id) {
+        $template = Ebook_Mail_Templates::get_mail_template_by_id($template_id);    $template = Ebook_Mail_Templates::get_mail_template_by_id($template_id);
+        if (!$template) { if (!$template) {
+            echo '<div class="notice notice-error"><p>' . __('A sablon nem található!', 'ebook-sales') . '</p></div>';ss="notice notice-error"><p>' . __('A sablon nem található!', 'ebook-sales') . '</p></div>';
+            return;     return;
         }
         
         ?>
         <h3><?php echo esc_html($template->name); ?> <?php _e('megtekintése', 'ebook-sales'); ?></h3>
         
-        <div class="template-view-container">
-            <div class="template-meta">
-                <p><strong><?php _e('ID', 'ebook-sales'); ?>:</strong> <?php echo esc_html($template->id); ?></p>
-                <p><strong><?php _e('Név', 'ebook-sales'); ?>:</strong> <?php echo esc_html($template->name); ?></p>
-                <p><strong><?php _e('Tárgy', 'ebook-sales'); ?>:</strong> <?php echo esc_html($template->subject); ?></p>
-                <p><strong><?php _e('Létrehozva', 'ebook-sales'); ?>:</strong> <?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($template->created_at))); ?></p>
+        <div class="template-view-container">div class="template-view-container">
+            <div class="template-meta">    <div class="template-meta">
+                <p><strong><?php _e('ID', 'ebook-sales'); ?>:</strong> <?php echo esc_html($template->id); ?></p>      <p><strong><?php _e('ID', 'ebook-sales'); ?>:</strong> <?php echo esc_html($template->id); ?></p>
+                <p><strong><?php _e('Név', 'ebook-sales'); ?>:</strong> <?php echo esc_html($template->name); ?></p>->name); ?></p>
+                <p><strong><?php _e('Tárgy', 'ebook-sales'); ?>:</strong> <?php echo esc_html($template->subject); ?></p>        <p><strong><?php _e('Tárgy', 'ebook-sales'); ?>:</strong> <?php echo esc_html($template->subject); ?></p>
+                <p><strong><?php _e('Létrehozva', 'ebook-sales'); ?>:</strong> <?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($template->created_at))); ?></p>va', 'ebook-sales'); ?>:</strong> <?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($template->created_at))); ?></p>
             </div>
             
             <div class="template-content">
                 <h4><?php _e('Sablon tartalma', 'ebook-sales'); ?>:</h4>
                 <div class="template-content-preview">
-                    <?php echo wpautop($template->content); ?>
-                </div>
+                    <?php echo wpautop($template->content); ?>  <?php echo wpautop($template->content); ?>
+                </div>    </div>
             </div>
             
             <p>
-                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok&action=edit&template_id=' . $template->id); ?>" class="button button-primary">
-                    <?php _e('Szerkesztés', 'ebook-sales'); ?>
-                </a>
-                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok'); ?>" class="button">
-                    <?php _e('Vissza a listához', 'ebook-sales'); ?>
+                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok&action=edit&template_id=' . $template->id); ?>" class="button button-primary">ebook-mailing&tab=sablonok&action=edit&template_id=' . $template->id); ?>" class="button button-primary">
+                    <?php _e('Szerkesztés', 'ebook-sales'); ?>php _e('Szerkesztés', 'ebook-sales'); ?>
+                </a>a>
+                <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok'); ?>" class="button">    <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=sablonok'); ?>" class="button">
+                    <?php _e('Vissza a listához', 'ebook-sales'); ?>     <?php _e('Vissza a listához', 'ebook-sales'); ?>
                 </a>
             </p>
         </div>
         
         <style>
-            .template-content-preview {
-                background: #fff;
-                border: 1px solid #ccd0d4;
-                padding: 20px;
-                margin-top: 10px;
+            .template-content-preview {e-content-preview {
+                background: #fff;background: #fff;
+                border: 1px solid #ccd0d4;  border: 1px solid #ccd0d4;
+                padding: 20px;        padding: 20px;
+                margin-top: 10px; margin-top: 10px;
             }
             
             .template-meta {
-                margin-bottom: 20px;
+                margin-bottom: 20px; 20px;
             }
-        </style>
-        <?php
+        </style>le>
+        <?phpp
     }
 }
 
-new Ebook_Admin();
+new Ebook_Admin(););

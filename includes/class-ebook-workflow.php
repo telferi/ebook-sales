@@ -138,6 +138,9 @@ class Ebook_Workflow {
             wp_send_json_error(array('message' => __('Nincs megfelelő jogosultságod.', 'ebook-sales')));
         }
 
+        // Debug: Naplózzuk a beérkező adatokat
+        error_log('Workflow mentés adatok: ' . print_r($_POST, true));
+
         $workflow_id = isset($_POST['workflow_id']) ? intval($_POST['workflow_id']) : 0;
         $name = sanitize_text_field($_POST['name']);
         $event = sanitize_text_field($_POST['event']);
