@@ -166,7 +166,7 @@ class Ebook_Admin {
                     <?php _e('Sablonok szerkesztése', 'ebook-sales'); ?>
                 </a>
                 <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=egyeb'); ?>" class="nav-tab <?php echo ($current_tab === 'egyeb') ? 'nav-tab-active' : ''; ?>">
-                    <?php _e('Egyébb', 'ebook-sales'); ?>
+                    <?php _e('Egyébb', 'ebook-sales'); ?>-sales'); ?>
                 </a>
             </h2>
             <div class="tab-content">
@@ -298,8 +298,8 @@ class Ebook_Admin {
                         break;
                     case 'egyeb':
                         ?>
-                        <h3><?php _e('Egyébb', 'ebook-sales'); ?></h3>
-                        <p><?php _e('Itt találhatóak egyéb levelezési opciók.', 'ebook-sales'); ?></p>
+                        <h3><?php _e('Küldési feltételek', 'ebook-sales'); ?></h3>s'); ?></h3>
+                        <p><?php _e('Itt találhatóak egyéb levelezési opciók.', 'ebook-sales'); ?></p>k-sales'); ?></p>
                         <?php
                         break;
                     default:
