@@ -60,14 +60,13 @@ class Ebook_Workflow {
      * @return array Események listája
      */
     public function get_available_events() {
-        // Ezt a listát később bővíthetjük, akár hook-on keresztül is
         $events = array(
-            'ebook_purchase' => __('Ebook vásárlás', 'ebook-sales'),
-            'subscription_started' => __('Feliratkozás kezdődött', 'ebook-sales'),
-            'user_registration' => __('Felhasználó regisztrált', 'ebook-sales'),
-            'form_submission' => __('Űrlap beküldése', 'ebook-sales')
+            'ebook_vasarlas'         => __('Ebook Vásárlás', 'ebook-sales'),
+            'tamogatas_erkezett'     => __('Támogatás érkezett', 'ebook-sales'),
+            'feliratkozas_kezdodott'  => __('Feliratkozás kezdődött', 'ebook-sales'),
+            'regisztralt_felhasznalo' => __('Regisztrált a felhasználó', 'ebook-sales'),
+            'urlap_bekuldve'         => __('Űrlap beküldve', 'ebook-sales')
         );
-
         return apply_filters('ebook_workflow_events', $events);
     }
 
@@ -77,15 +76,10 @@ class Ebook_Workflow {
      * @return array Műveletek listája
      */
     public function get_available_actions() {
-        // Ezt a listát később bővíthetjük, akár hook-on keresztül is
         $actions = array(
-            'send_email' => __('Email küldés', 'ebook-sales'),
-            'add_role' => __('Szerepkör hozzáadás', 'ebook-sales'),
-            'remove_role' => __('Szerepkör elvétel', 'ebook-sales'),
-            'create_user' => __('Felhasználó létrehozás', 'ebook-sales'),
-            'update_meta' => __('Meta adat frissítés', 'ebook-sales')
+            'send_email'  => __('Email küldés (válassz sablont)', 'ebook-sales'),
+            'role_change' => __('Szerepkör módosítás (válassz szerepkört)', 'ebook-sales')
         );
-
         return apply_filters('ebook_workflow_actions', $actions);
     }
 
