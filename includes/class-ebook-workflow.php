@@ -393,7 +393,6 @@ class Ebook_Workflow {
      */
     private function render_workflow_form($workflow_id = 0) {
         $workflow = null;
-        
         if ($workflow_id > 0) {
             $workflow = $this->get_workflow($workflow_id);
             if (!$workflow) {
@@ -401,129 +400,103 @@ class Ebook_Workflow {
                 return;
             }
         }
-        
         $events = $this->get_available_events();
         $actions = $this->get_available_actions();
         $results = $this->get_available_results();
         
         $title = $workflow_id > 0 ? __('Munkafolyamat szerkesztése', 'ebook-sales') : __('Új munkafolyamat létrehozása', 'ebook-sales');
         $button_text = $workflow_id > 0 ? __('Frissítés', 'ebook-sales') : __('Létrehozás', 'ebook-sales');
-        
-        // Paraméterek kinyerése
-        $event_params = $workflow_id > 0 && !empty($workflow->event_params) ? json_decode($workflow->event_params, true) : array();
-        $action_params = $workflow_id > 0 && !empty($workflow->action_params) ? json_decode($workflow->action_params, true) : array();
-        $result_params = $workflow_id > 0 && !empty($workflow->result_params) ? json_decode($workflow->result_params, true) : array();
-        
         ?>
         <div class="wrap">
             <h2><?php echo $title; ?></h2>
-            
-            <div class="workflow-form-container">
-                <form id="workflow-form" class="workflow-form">
-                    <?php wp_nonce_field('ebook_workflow_nonce', 'workflow_nonce'); ?>
-                    <input type="hidden" name="workflow_id" value="<?php echo esc_attr($workflow_id); ?>">
-                    
-                    <div class="form-field">
-                        <label for="workflow-name"><?php _e('Név', 'ebook-sales'); ?>:</label>
-                        <input type="text" id="workflow-name" name="name" value="<?php echo $workflow ? esc_attr($workflow->name) : ''; ?>" required>
-                    </div>
-                    
-                    <div class="form-field">
-                        <label for="workflow-status"><?php _e('Állapot', 'ebook-sales'); ?>:</label>
-                        <select id="workflow-status" name="status">
-                            <option value="active" <?php selected($workflow ? $workflow->status : 'active', 'active'); ?>><?php _e('Aktív', 'ebook-sales'); ?></option>
-                            <option value="inactive" <?php selected($workflow ? $workflow->status : 'active', 'inactive'); ?>><?php _e('Inaktív', 'ebook-sales'); ?></option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-field">
-                        <label for="workflow-event"><?php _e('Esemény', 'ebook-sales'); ?>:</label>
-                        <select id="workflow-event" name="event" required>
-                            <option value=""><?php _e('Válassz eseményt', 'ebook-sales'); ?></option>
-                            <?php foreach ($events as $key => $label) : ?>
-                                <option value="<?php echo esc_attr($key); ?>" <?php selected($workflow ? $workflow->event : '', $key); ?>><?php echo esc_html($label); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    
-                    <!-- Itt jönnek majd az esemény-specifikus paraméter mezők -->
-                    <div id="event-params-ebook_purchase" class="event-params workflow-params">
-                        <h4><?php _e('Ebook vásárlás esemény paraméterei', 'ebook-sales'); ?></h4>
-                        <div class="form-field">
-                            <label for="event-param-amount"><?php _e('Minimum összeg', 'ebook-sales'); ?>:</label>
-                            <input type="number" id="event-param-amount" name="event_params[minimum_amount]" value="<?php echo isset($event_params['minimum_amount']) ? esc_attr($event_params['minimum_amount']) : '0'; ?>" min="0" step="0.01">
+            <form id="workflow-form" class="workflow-form" method="post">
+                <?php wp_nonce_field('ebook_workflow_nonce', 'workflow_nonce'); ?>
+                <input type="hidden" name="workflow_id" value="<?php echo esc_attr($workflow_id); ?>">
+                
+                <div class="form-field">
+                    <label for="workflow-name"><?php _e('Név', 'ebook-sales'); ?>:</label>
+                    <input type="text" id="workflow-name" name="name" value="<?php echo $workflow ? esc_attr($workflow->name) : ''; ?>" required>
+                </div>
+                
+                <div class="form-field">
+                    <label for="workflow-status"><?php _e('Állapot', 'ebook-sales'); ?>:</label>
+                    <select id="workflow-status" name="status">
+                        <option value="active" <?php selected($workflow ? $workflow->status : 'active', 'active'); ?>><?php _e('Aktív', 'ebook-sales'); ?></option>
+                        <option value="inactive" <?php selected($workflow ? $workflow->status : 'active', 'inactive'); ?>><?php _e('Inaktív', 'ebook-sales'); ?></option>
+                    </select>
+                </div>
+                
+                <div class="workflow-dynamic-container" style="overflow:hidden; margin-top:20px;">
+                    <div class="workflow-left-col" style="width:70%; float:left; border:1px solid #ccc; padding:10px;">
+                        <h3><?php _e('Hozzáadott elemek', 'ebook-sales'); ?></h3>
+                        <div id="workflow-items">
+                            <!-- Betöltött elemek, ha van mentett adat -->
                         </div>
                     </div>
-                    
-                    <!-- További esemény paraméter blokkok más eseményekhez -->
-                    
-                    <div class="form-field">
-                        <label for="workflow-action"><?php _e('Művelet', 'ebook-sales'); ?>:</label>
-                        <select id="workflow-action" name="action" required>
-                            <option value=""><?php _e('Válassz műveletet', 'ebook-sales'); ?></option>
-                            <?php foreach ($actions as $key => $label) : ?>
-                                <option value="<?php echo esc_attr($key); ?>" <?php selected($workflow ? $workflow->action : '', $key); ?>><?php echo esc_html($label); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                    <div class="workflow-right-col" style="width:25%; float:right;">
+                        <h3><?php _e('Elem hozzáadás', 'ebook-sales'); ?></h3>
+                        <button type="button" id="add-event" class="button" style="margin-bottom:10px;"><?php _e('Hozzáad Eseményt', 'ebook-sales'); ?></button><br>
+                        <button type="button" id="add-action" class="button" style="margin-bottom:10px;"><?php _e('Hozzáad Műveletet', 'ebook-sales'); ?></button><br>
+                        <button type="button" id="add-result" class="button"><?php _e('Hozzáad Eredményt', 'ebook-sales'); ?></button>
                     </div>
-                    
-                    <!-- Itt jönnek majd a művelet-specifikus paraméter mezők -->
-                    <div id="action-params-send_email" class="action-params workflow-params">
-                        <h4><?php _e('Email küldés paraméterei', 'ebook-sales'); ?></h4>
-                        <div class="form-field">
-                            <label for="action-param-template"><?php _e('Email sablon', 'ebook-sales'); ?>:</label>
-                            <select id="action-param-template" name="action_params[email_template]">
-                                <option value=""><?php _e('Válassz sablont', 'ebook-sales'); ?></option>
-                                <?php 
-                                global $wpdb;
-                                $templates = $wpdb->get_results("SELECT id, name FROM {$wpdb->prefix}ebook_mail_templates");
-                                foreach ($templates as $template) :
-                                ?>
-                                    <option value="<?php echo esc_attr($template->id); ?>" <?php selected(isset($action_params['email_template']) ? $action_params['email_template'] : '', $template->id); ?>><?php echo esc_html($template->name); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- További művelet paraméter blokkok más műveletekhez -->
-                    
-                    <div class="form-field">
-                        <label for="workflow-result"><?php _e('Eredmény', 'ebook-sales'); ?>:</label>
-                        <select id="workflow-result" name="result" required>
-                            <option value=""><?php _e('Válassz eredményt', 'ebook-sales'); ?></option>
-                            <?php foreach ($results as $key => $label) : ?>
-                                <option value="<?php echo esc_attr($key); ?>" <?php selected($workflow ? $workflow->result : '', $key); ?>><?php echo esc_html($label); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    
-                    <!-- Itt jönnek majd az eredmény-specifikus paraméter mezők -->
-                    <div id="result-params-role_change" class="result-params workflow-params">
-                        <h4><?php _e('Szerepkör módosítás paraméterei', 'ebook-sales'); ?></h4>
-                        <div class="form-field">
-                            <label for="result-param-role"><?php _e('Új szerepkör', 'ebook-sales'); ?>:</label>
-                            <select id="result-param-role" name="result_params[role]">
-                                <option value=""><?php _e('Válassz szerepkört', 'ebook-sales'); ?></option>
-                                <?php 
-                                $editable_roles = get_editable_roles();
-                                foreach ($editable_roles as $role => $details) :
-                                    if ($role === 'administrator') continue;
-                                ?>
-                                    <option value="<?php echo esc_attr($role); ?>" <?php selected(isset($result_params['role']) ? $result_params['role'] : '', $role); ?>><?php echo esc_html(translate_user_role($details['name'])); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- További eredmény paraméter blokkok más eredményekhez -->
-                    
-                    <div class="submit-button" style="margin-top: 20px;">
-                        <button type="submit" class="button button-primary"><?php echo $button_text; ?></button>
-                        <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=workflow'); ?>" class="button"><?php _e('Vissza', 'ebook-sales'); ?></a>
-                    </div>
-                </form>
-            </div>
+                    <div style="clear:both;"></div>
+                </div>
+                
+                <div class="submit-button" style="margin-top:20px;">
+                    <button type="submit" class="button button-primary"><?php echo $button_text; ?></button>
+                    <a href="<?php echo admin_url('admin.php?page=ebook-mailing&tab=workflow'); ?>" class="button"><?php _e('Vissza', 'ebook-sales'); ?></a>
+                </div>
+            </form>
         </div>
+        <script type="text/javascript">
+        jQuery(document).ready(function($){
+            function createItem(type, optionsHtml) {
+                var itemCount = $('#workflow-items .workflow-item').length;
+                var html = '<div class="workflow-item" data-type="'+type+'" style="margin-bottom:10px; padding:5px; border:1px solid #ddd;">';
+                html += '<label>' + type.charAt(0).toUpperCase() + type.slice(1) + ':</label> ';
+                html += '<select name="workflow_' + type + 's[]">' + optionsHtml + '</select> ';
+                html += '<button type="button" class="remove-item button">-</button>';
+                html += '</div>';
+                return html;
+            }
+            
+            var eventOptions = '<?php 
+                $opts = "";
+                foreach($events as $key => $label){
+                    $opts .= "<option value=\"".esc_attr($key)."\">".esc_html($label)."</option>";
+                }
+                echo $opts;
+            ?>';
+            var actionOptions = '<?php 
+                $opts = "";
+                foreach($actions as $key => $label){
+                    $opts .= "<option value=\"".esc_attr($key)."\">".esc_html($label)."</option>";
+                }
+                echo $opts;
+            ?>';
+            var resultOptions = '<?php 
+                $opts = "";
+                foreach($results as $key => $label){
+                    $opts .= "<option value=\"".esc_attr($key)."\">".esc_html($label)."</option>";
+                }
+                echo $opts;
+            ?>';
+            
+            $('#add-event').on('click', function(){
+                $('#workflow-items').append(createItem('event', eventOptions));
+            });
+            $('#add-action').on('click', function(){
+                $('#workflow-items').append(createItem('action', actionOptions));
+            });
+            $('#add-result').on('click', function(){
+                $('#workflow-items').append(createItem('result', resultOptions));
+            });
+            
+            $('#workflow-items').on('click', '.remove-item', function(){
+                $(this).closest('.workflow-item').remove();
+            });
+        });
+        </script>
         <?php
     }
 
@@ -707,3 +680,4 @@ class Ebook_Workflow {
         update_user_meta($params['user_id'], '_ebook_access_' . $result_params['content_id'], '1');
     }
 }
+?>
