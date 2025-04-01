@@ -440,11 +440,24 @@ class Ebook_Workflow {
         </div>
         <script type="text/javascript">
         jQuery(document).ready(function($){
+            // Email sablon opciók JS változóba
+            var emailTemplateOptions = '<?php 
+                $opts = "";
+                $mail_templates = Ebook_Mail_Templates::get_mail_templates();
+                foreach($mail_templates as $template){
+                    $opts .= "<option value=\"".esc_attr($template->id)."\">".esc_html($template->name)."</option>";
+                }
+                echo $opts;
+            ?>';
+            
             function createItem(type, optionsHtml) {
                 var itemCount = $('#workflow-items .workflow-item').length;
                 var html = '<div class="workflow-item" data-type="'+type+'" style="margin-bottom:10px; padding:5px; border:1px solid #ddd;">';
                 html += '<label>' + type.charAt(0).toUpperCase() + type.slice(1) + ':</label> ';
                 html += '<select name="workflow_' + type + 's[]">' + optionsHtml + '</select> ';
+                if(type === 'action'){
+                    html += '<div class="action-extra" style="margin-top:5px;"></div> ';
+                }
                 html += '<button type="button" class="remove-item button">-</button>';
                 html += '</div>';
                 return html;
@@ -480,6 +493,19 @@ class Ebook_Workflow {
             });
             $('#add-result').on('click', function(){
                 $('#workflow-items').append(createItem('result', resultOptions));
+            });
+            
+            // Ha egy action select változik, ellenőrizzük, hogy send_email-e, és kezeljük a plusz mezőt
+            $('#workflow-items').on('change', 'select[name="workflow_actions[]"]', function(){
+                var selected = $(this).val();
+                var extraDiv = $(this).siblings('.action-extra');
+                if(selected === 'send_email') {
+                    if(extraDiv.children().length === 0){
+                        extraDiv.html('<label>Email sablon:</label> <select name="action_email_template[]">' + emailTemplateOptions + '</select>');
+                    }
+                } else {
+                    extraDiv.empty();
+                }
             });
             
             $('#workflow-items').on('click', '.remove-item', function(){
