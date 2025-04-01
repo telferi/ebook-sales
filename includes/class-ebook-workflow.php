@@ -61,11 +61,8 @@ class Ebook_Workflow {
      */
     public function get_available_events() {
         $events = array(
-            'ebook_vasarlas'         => __('Ebook Vásárlás', 'ebook-sales'),
-            'tamogatas_erkezett'     => __('Támogatás érkezett', 'ebook-sales'),
-            'feliratkozas_kezdodott'  => __('Feliratkozás kezdődött', 'ebook-sales'),
-            'regisztralt_felhasznalo' => __('Regisztrált a felhasználó', 'ebook-sales'),
-            'urlap_bekuldve'         => __('Űrlap beküldve', 'ebook-sales')
+            'ebook_vasarlas'     => __('Ebook Vásárlás', 'ebook-sales'),
+            'tamogatas_erkezett' => __('Támogatás érkezett', 'ebook-sales')
         );
         return apply_filters('ebook_workflow_events', $events);
     }
@@ -77,8 +74,7 @@ class Ebook_Workflow {
      */
     public function get_available_actions() {
         $actions = array(
-            'send_email'  => __('Email küldés (válassz sablont)', 'ebook-sales'),
-            'role_change' => __('Szerepkör módosítás (válassz szerepkört)', 'ebook-sales')
+            'send_email' => __('Email küldés (válassz sablont)', 'ebook-sales')
         );
         return apply_filters('ebook_workflow_actions', $actions);
     }
